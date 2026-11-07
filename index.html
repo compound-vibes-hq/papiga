@@ -1,0 +1,184 @@
+<!DOCTYPE html><html lang="sl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moj zvezek vaj</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ff8a5b">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{--bg:#fff8ef;--card:#fff;--ink:#2d2a32;--mut:#6b6570;--pri:#ff8a5b;--pri2:#ffb703;--ok:#2a9d8f;--sky:#8ecae6;--r:18px}
+*{box-sizing:border-box}button{font-family:inherit}body{margin:0;font-family:system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px;background:#fff;box-shadow:0 2px 8px #0001;position:sticky;top:0;z-index:5}
+header h1{font-size:18px;margin:0 auto 0 0}header h1 span{color:var(--pri)}
+nav button{border:0;background:#f3ece4;padding:10px 14px;border-radius:999px;font-size:15px;cursor:pointer;margin:2px}
+nav button[aria-selected=true]{background:var(--pri);color:#fff;font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:0 2px 10px #0000000d;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:300px 1fr;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.kid{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;cursor:pointer;border:2px solid transparent;width:100%;background:none;text-align:left;font:inherit}
+.kid[aria-pressed=true]{border-color:var(--pri);background:#fff3ec}.av{font-size:28px;width:44px;height:44px;border-radius:50%;background:#ffe8d6;display:grid;place-items:center}
+label{display:block;font-size:14px;color:var(--mut);margin:10px 0 4px}select,input,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;font:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{border:2px solid #eee;background:#fff;border-radius:12px;padding:8px 12px;font-size:17px;font-weight:700;cursor:pointer}.chip[aria-pressed=true]{border-color:var(--pri);background:#fff3ec}
+.btn{border:0;border-radius:14px;padding:12px 18px;font-size:16px;font-weight:600;cursor:pointer;background:var(--pri);color:#fff}.btn.sec{background:#f3ece4;color:var(--ink)}
+.btn.sm{padding:6px 10px;font-size:14px;border-radius:10px}.btn.rec{background:#e63946}
+.row{display:flex;gap:12px;flex-wrap:wrap}.stat{flex:1;min-width:130px;background:#fff8ef;border-radius:14px;padding:12px}.stat b{font-size:26px;display:block}
+.days{display:flex;gap:6px;flex-wrap:wrap}.day{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:12px;background:#eee}.day.on{background:var(--ok);color:#fff}.day.today{outline:2px solid var(--pri)}
+.cmt{border-left:4px solid var(--sky);padding:6px 10px;margin:6px 0;background:#f6fbfd;border-radius:6px;font-size:14px}
+.recrow{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #f1ebe4}.recrow b{flex:1;font-size:16px}
+small,.mut{color:var(--mut)}
+.phone{max-width:390px;margin:0 auto}
+.big{font-size:22px;padding:18px;border-radius:20px;width:100%}
+.wcard{text-align:center;padding:24px 16px}.pic{font-size:110px;line-height:1.1}.word{font-size:42px;font-weight:800;letter-spacing:1px;margin:8px 0}.word u{color:var(--pri);text-decoration-thickness:4px}
+.prog{height:12px;background:#eee;border-radius:99px;overflow:hidden}.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--pri2),var(--pri))}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.ok{background:var(--ok)}.again{background:var(--pri2);color:#3a2a00}
+.stk{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;font-size:30px;text-align:center}.stk span{background:#fff8ef;border-radius:12px;padding:4px}.stk .lock{filter:grayscale(1);opacity:.25}
+.cele{position:fixed;inset:0;background:#0006;display:none;place-items:center;z-index:9}.cele.on{display:grid}.cele .card{text-align:center;max-width:340px;animation:pop .5s}
+@keyframes pop{0%{transform:scale(.5)}80%{transform:scale(1.08)}100%{transform:scale(1)}}
+.conf{position:fixed;top:-40px;font-size:28px;animation:fall 2.4s linear forwards;z-index:10;pointer-events:none}@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media (prefers-reduced-motion:reduce){.conf{display:none}.cele .card{animation:none}}
+footer{text-align:center;font-size:13px;color:var(--mut);padding:18px}
+:focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
+</style></head><body>
+<header><h1>📒 Moj <span>zvezek</span> vaj</h1><button class="btn sm" id="namesti" hidden>📲 Namesti aplikacijo</button><nav role="tablist" id="tabs"></nav></header>
+<main id="app"></main>
+<div class="cele" id="cele" role="dialog" aria-modal="true" aria-labelledby="celeT"></div>
+<footer>Prototip – ni medicinski pripomoček; vaje določi logoped. · Vsi podatki so izmišljeni in shranjeni le v tem brskalniku.</footer>
+<script>
+/* ---------- Besede: [beseda, emoji] ----------
+   Konec besede pri Z in Ž je namenoma izpuščen (razzvenevanje: voz [vos], nož [noš]).
+   Konec besede pri L je izpuščen, dokler logoped ne potrdi seznama (končni l se pogosto izgovori kot [u]). */
+const W={
+S:{z:[["sok","🧃"],["sonce","☀️"],["sir","🧀"],["sova","🦉"]],s:[["osa","🐝"],["pesek","🏖️"],["lisica","🦊"],["kosilo","🍽️"]],k:[["nos","👃"],["pes","🐶"],["las","💇"],["kokos","🥥"]]},
+Z:{z:[["zajec","🐰"],["zob","🦷"],["zvezda","⭐"],["zebra","🦓"]],s:[["koza","🐐"],["vaza","🏺"],["miza","🪑"],["koruza","🌽"]]},
+C:{z:[["cvet","🌸"],["copat","🥿"],["cesta","🛣️"],["citrona","🍋"]],s:[["ovca","🐑"],["ptica","🐦"],["jajce","🥚"],["kocka","🎲"]],k:[["lonec","🍲"],["zajec","🐰"],["palec","👍"],["konec","🏁"]]},
+"Š":{z:[["šola","🏫"],["škatla","📦"],["šal","🧣"],["šopek","💐"]],s:[["miška","🐭"],["hiša","🏠"],["hruška","🍐"],["kaša","🥣"]],k:[["miš","🐁"],["koš","🧺"],["tuš","🚿"],["kokoš","🐔"]]},
+"Ž":{z:[["žoga","⚽"],["žaba","🐸"],["žlica","🥄"],["žirafa","🦒"]],s:[["roža","🌹"],["luža","💧"],["kuža","🐶"],["ježek","🦔"]]},
+"Č":{z:[["čebela","🐝"],["čaj","🍵"],["čevelj","👞"],["čoln","🛶"]],s:[["mačka","🐱"],["očala","👓"],["kača","🐍"],["račka","🐤"]],k:[["ključ","🔑"],["meč","🗡️"],["kolač","🥧"],["kovač","🔨"]]},
+L:{z:[["lev","🦁"],["luna","🌙"],["lonec","🍲"],["list","🍃"]],s:[["balon","🎈"],["kolo","🚲"],["pila","🪚"],["jabolko","🍎"]]},
+R:{z:[["riba","🐟"],["roka","✋"],["raca","🦆"],["robot","🤖"]],s:[["ura","⏰"],["torba","👜"],["krava","🐄"],["žirafa","🦒"]],k:[["sir","🧀"],["tiger","🐯"],["kuhar","🧑‍🍳"],["mornar","⚓"]]}};
+const POS={z:"začetek",s:"sredina",k:"konec"},ST=["⭐","🦄","🐙","🚀","🌈","🦖","🎈","🐢","🍓","🏆","🐝","🌻"];
+const DN=["pon","tor","sre","čet","pet","sob","ned"];
+
+/* ---------- Datumi ---------- */
+const iso=d=>{const x=new Date(d);x.setMinutes(x.getMinutes()-x.getTimezoneOffset());return x.toISOString().slice(0,10)};
+const danes=()=>iso(new Date());
+const premik=n=>{const d=new Date();d.setDate(d.getDate()+n);return iso(d)};
+function teden(){const dow=(new Date().getDay()+6)%7;return DN.map((_,i)=>premik(i-dow))}
+function dniTeden(k){const t=teden();return t.filter(d=>k.dnevi.includes(d)).length}
+function niz(k){const s=new Set(k.dnevi);const o=s.has(danes())?0:-1;let n=0;while(s.has(premik(o-n)))n++;return n}
+
+/* ---------- Podatki ---------- */
+function seed(){const d=a=>a.map(premik);return {v:2,aktiven:1,vloga:"logoped",kids:[
+{id:1,ime:"Lana",starost:5,av:"🦊",sklop:{glas:"Š",poz:"z",pon:2,opomba:"Vadite zjutraj, ko je Lana spočita. Pohvalite vsak poskus."},dnevi:d([-1,-2,-3,-5]),stat:{"Š-z":[34,46],"S-z":[40,44]},kom:["Pri besedi škatla se je še malo zatikalo, šola gre odlično!","Lana je sama prosila za vaje 😊"],zvezde:41,nalepke:5,nagradaDan:null,vaja:null},
+{id:2,ime:"Jakob",starost:6,av:"🐻",sklop:{glas:"R",poz:"s",pon:3,opomba:"Pred vajo naj se igra z jezikom (»konjiček«)."},dnevi:d([-1,-2,-4]),stat:{"R-s":[18,40],"L-z":[30,33]},kom:["R v sredini še težko, pri »ura« je bil zelo ponosen."],zvezde:22,nalepke:3,nagradaDan:null,vaja:null},
+{id:3,ime:"Ema",starost:4,av:"🐼",sklop:{glas:"C",poz:"k",pon:2,opomba:"Kratke vaje, največ 5 minut."},dnevi:d([-1,-2,-3,-4,-5]),stat:{"C-k":[38,42],"S-z":[25,30],"Z-z":[20,28]},kom:["Vsak dan po vrtcu, gre ji vedno bolje.","Zajec je njena najljubša kartica."],zvezde:63,nalepke:7,nagradaDan:null,vaja:null}]}}
+function load(){try{const x=JSON.parse(localStorage.getItem("pzv2"));if(x&&x.v===2&&Array.isArray(x.kids))return x}catch(e){}return seed()}
+let S=load();
+function save(){try{localStorage.setItem("pzv2",JSON.stringify(S))}catch(e){}}
+
+/* ---------- Posnetki (IndexedDB) ---------- */
+const DB=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open("pzv-posnetki",1);r.onupgradeneeded=()=>r.result.createObjectStore("rec");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+const tx=(m,fn)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction("rec",m),q=fn(t.objectStore("rec"));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)}));
+return{get:k=>tx("readonly",s=>s.get(k)),put:(k,v)=>tx("readwrite",s=>s.put(v,k)),del:k=>tx("readwrite",s=>s.delete(k)),keys:()=>tx("readonly",s=>s.getAllKeys())}})();
+let REC=new Set(),mr=null,recW=null;
+
+/* ---------- Dodajanje / odstranjevanje otrok ---------- */
+let dodaj=false,novAv="🐰";const AV=["🦊","🐻","🐼","🐰","🐸","🐯","🦁","🐨","🐵","🦄"];
+const leta=n=>n==1?"leto":n==2?"leti":n<5?"leta":"let";
+function dodajForm(){if(!dodaj)return `<button class="btn sec" style="width:100%;margin-top:8px" onclick="dodaj=true;render();setTimeout(()=>{const i=$('#nIme');if(i)i.focus()})">➕ Dodaj otroka</button>`;
+return `<form onsubmit="return dodajOtroka(event)" style="margin-top:10px;border-top:1px solid #f1ebe4;padding-top:6px"><label for="nIme">Ime</label><input id="nIme" name="ime" required maxlength="30" autocomplete="off"><label for="nSt">Starost (let)</label><input id="nSt" name="st" type="number" min="1" max="18" value="5"><label>Ikona</label><div class="chips">${AV.map(a=>`<button type="button" class="chip" aria-pressed="${novAv==a}" aria-label="Ikona ${a}" onclick="novAv='${a}';this.parentNode.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===this))">${a}</button>`).join("")}</div><div class="row" style="margin-top:12px"><button class="btn" type="submit">Shrani</button><button class="btn sec" type="button" onclick="dodaj=false;render()">Prekliči</button></div></form>`}
+function dodajOtroka(e){e.preventDefault();const f=e.target,ime=f.ime.value.trim(),st=Math.min(18,Math.max(1,Math.round(+f.st.value)||5));if(!ime){f.ime.focus();return false}
+const id=Math.max(0,...S.kids.map(k=>k.id))+1;S.kids.push({id,ime,starost:st,av:novAv,sklop:{glas:"S",poz:"z",pon:2,opomba:""},dnevi:[],stat:{},kom:[],zvezde:0,nalepke:0,nagradaDan:null,vaja:null});
+S.aktiven=id;dodaj=false;save();render();toast2(ime+" je dodan/-a. Zdaj mu/ji dodelite vaje.");return false}
+function odstrani(id){if(S.kids.length<2){toast2("Ostati mora vsaj en otrok.");return}const k=S.kids.find(x=>x.id==id)||kid();if(!confirm("Odstranim otroka "+k.ime+" in vse njegove podatke?"))return;S.kids=S.kids.filter(x=>x.id!==k.id);if(!S.kids.some(x=>x.id==S.aktiven))S.aktiven=S.kids[0].id;save();render();toast2(k.ime+" je odstranjen/-a.")}
+
+/* ---------- Pomožne ---------- */
+const $=s=>document.querySelector(s),kid=()=>S.kids.find(k=>k.id==S.aktiven)||S.kids[0],esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const key=s=>s.glas+"-"+s.poz,lbl=k=>{const[g,p]=k.split("-");return g+" · "+POS[p]};
+function words(){const s=kid().sklop;return W[s.glas][s.poz]}
+function vaja(k){if(!k.vaja||k.vaja.datum!==danes())k.vaja={datum:danes(),i:0,rep:0,ok:0};return k.vaja}
+function fixSklop(k){const s=k.sklop;if(!W[s.glas])s.glas="S";if(!W[s.glas][s.poz])s.poz=Object.keys(W[s.glas])[0];s.pon=Math.min(5,Math.max(1,Math.round(+s.pon)||1))}
+S.kids.forEach(fixSklop);
+function setGlas(g){const k=kid();k.sklop.glas=g;fixSklop(k);save();render()}
+function setPoz(p){const k=kid();k.sklop.poz=p;fixSklop(k);save();render()}
+function setPon(v){const k=kid();k.sklop.pon=v;fixSklop(k);save();render()}
+function dodeli(){const k=kid();k.vaja={datum:danes(),i:0,rep:0,ok:0};save();render();const t=$("#toast");if(t)t.textContent="✔ Vaje so dodeljene: "+k.ime}
+function mark(w,g,p){const l=w.toLowerCase(),G=g.toLowerCase();let i=p=="z"?0:p=="k"?l.lastIndexOf(G):l.indexOf(G,1);if(i<0)return esc(w);return esc(w.slice(0,i))+"<u>"+esc(w.slice(i,i+G.length))+"</u>"+esc(w.slice(i+G.length))}
+function toast2(m){const p=document.createElement("div");p.className="card";p.setAttribute("role","status");p.style.cssText="position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:8;max-width:340px";p.textContent=m;document.body.append(p);setTimeout(()=>p.remove(),2800)}
+
+/* ---------- Zvok ---------- */
+async function snemaj(w){
+  if(mr){mr.stop();return}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){naloziPosnetek(w);return}
+  try{const st=await navigator.mediaDevices.getUserMedia({audio:true});const r=new MediaRecorder(st),ch=[];
+    r.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};
+    r.onstop=async()=>{st.getTracks().forEach(t=>t.stop());mr=null;recW=null;
+      if(ch.length){try{await DB.put(w,new Blob(ch,{type:r.mimeType||"audio/webm"}));REC.add(w);toast2("Posnetek »"+w+"« je shranjen.")}catch(e){toast2("Posnetka ni bilo mogoče shraniti.")}}
+      render()};
+    r.start();mr=r;recW=w;render();setTimeout(()=>{if(mr===r)r.stop()},4000)
+  }catch(e){toast2("Mikrofon ni dovoljen. Tapnite 📁 in besedo posnemite z aplikacijo telefona.")}}
+function naloziPosnetek(w){const i=document.createElement("input");i.type="file";i.accept="audio/*";i.setAttribute("capture","");
+  i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;try{await DB.put(w,f);REC.add(w);toast2("Posnetek »"+w+"« je shranjen.")}catch(e){toast2("Posnetka ni bilo mogoče shraniti.")}render()};i.click()}
+async function predvajaj(w){try{const b=await DB.get(w);if(!b)throw 0;const a=new Audio(URL.createObjectURL(b));a.onended=()=>URL.revokeObjectURL(a.src);await a.play()}catch(e){toast2("Posnetka ni mogoče predvajati – besedo preberite na glas.")}}
+async function izbrisi(w){try{await DB.del(w);REC.delete(w)}catch(e){}render()}
+
+/* ---------- Pogledi ---------- */
+const TABS=[["logoped","🩺 Logoped"],["otrok","🧒 Otrok + starš"],["stars","👪 Starš"]];
+function tabs(){$("#tabs").innerHTML=TABS.map(([v,t])=>`<button role="tab" aria-selected="${S.vloga==v}" onclick="S.vloga='${v}';save();render()">${t}</button>`).join("")}
+function dayStrip(k){const t=teden(),d=danes();return `<div class="days">${t.map((x,i)=>`<div class="day ${k.dnevi.includes(x)?"on":""} ${x==d?"today":""}" title="${DN[i]} ${x}">${DN[i]}</div>`).join("")}</div>`}
+function chart(k){const e=Object.entries(k.stat).filter(([,[,t]])=>t>0);if(!e.length)return "<p class='mut'>Še ni podatkov.</p>";
+return `<svg viewBox="0 0 400 ${e.length*46+10}" width="100%" role="img" aria-label="Delež pravilnih izgovorjav po glasovih in položajih">`+e.map(([g,[o,t]],i)=>{const p=Math.round(o/t*100),y=i*46+8;return `<text x="0" y="${y+21}" font-size="16" font-weight="700" fill="#2d2a32">${esc(lbl(g))}</text><rect x="130" y="${y}" width="200" height="30" rx="8" fill="#f3ece4"/><rect x="130" y="${y}" width="${2*p}" height="30" rx="8" fill="${p>=75?'#2a9d8f':p>=50?'#ffb703':'#ff8a5b'}"/><text x="340" y="${y+21}" font-size="16" fill="#2d2a32">${p} %</text>`}).join("")+"</svg>"}
+
+function logoped(){const k=kid(),s=k.sklop,ws=W[s.glas][s.poz];return `<div class="grid"><div><div class="card"><h2 style="margin-top:0">Moji otroci</h2>${S.kids.map(x=>`<div style="display:flex;align-items:center;gap:4px"><button class="kid" aria-pressed="${x.id==k.id}" onclick="S.aktiven=${x.id};save();render()"><span class="av">${x.av}</span><span><b>${esc(x.ime)}</b><br><small>${x.starost} ${leta(x.starost)} · glas ${x.sklop.glas}</small></span></button><button class="btn sec sm" onclick="odstrani(${x.id})" aria-label="Odstrani otroka ${esc(x.ime)}" title="Odstrani otroka">🗑</button></div>`).join("")}${dodajForm()}</div>
+<div class="card"><h3 style="margin-top:0">Dodeli vaje za domov</h3><label>Glas</label><div class="chips">${Object.keys(W).map(g=>`<button class="chip" aria-pressed="${s.glas==g}" onclick="setGlas('${g}')">${g}</button>`).join("")}</div>
+<label for="poz">Položaj v besedi</label><select id="poz" onchange="setPoz(this.value)">${Object.keys(W[s.glas]).map(v=>`<option value="${v}" ${s.poz==v?"selected":""}>${POS[v]} besede</option>`).join("")}</select>
+<label for="pon">Ponovitve na dan (1–5)</label><input id="pon" type="number" min="1" max="5" step="1" value="${s.pon}" onchange="setPon(this.value)">
+<label for="op">Opomba za starše</label><textarea id="op" rows="3" onchange="kid().sklop.opomba=this.value;save()">${esc(s.opomba)}</textarea>
+<p class="mut" style="font-size:14px">Besede: ${ws.map(w=>mark(w[0],s.glas,s.poz)).join(", ")} · ${ws.length*s.pon} kartic na dan</p>
+<button class="btn" onclick="dodeli()">Dodeli vaje</button> <span id="toast" class="mut" role="status"></span></div>
+<div class="card"><h3 style="margin-top:0">🎙️ Posnetki besed</h3><p class="mut" style="font-size:14px;margin-top:0">Posnemite pravilno izgovorjavo. Otrok bo slišal vaš glas. Snemanje se ustavi samo po 4 sekundah. Če mikrofon ni dovoljen (npr. na telefonu), tapnite 📁 in posnemite z aplikacijo telefona.</p>
+${ws.map(([w])=>`<div class="recrow"><b>${esc(w)}</b>${REC.has(w)?`<button class="btn sec sm" data-w="${esc(w)}" onclick="predvajaj(this.dataset.w)" aria-label="Predvajaj ${esc(w)}">▶</button>`:""}<button class="btn sm ${recW==w?"rec":"sec"}" data-w="${esc(w)}" onclick="snemaj(this.dataset.w)" ${mr&&recW!=w?"disabled":""}>${recW==w?"⏹ Ustavi":REC.has(w)?"● Znova":"● Posnemi"}</button><button class="btn sec sm" data-w="${esc(w)}" onclick="naloziPosnetek(this.dataset.w)" aria-label="Posnemi ali izberi posnetek v telefonu za ${esc(w)}" title="Posnemi z aplikacijo telefona ali izberi datoteko">📁</button>${REC.has(w)&&recW!=w?`<button class="btn sec sm" data-w="${esc(w)}" onclick="izbrisi(this.dataset.w)" aria-label="Izbriši posnetek ${esc(w)}">🗑</button>`:""}</div>`).join("")}</div></div>
+<div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">${k.av} ${esc(k.ime)} – napredek ta teden</h2><button class="btn sec sm" onclick="odstrani()">🗑 Odstrani otroka</button></div><div class="row"><div class="stat"><small>Dni vadbe</small><b>${dniTeden(k)} / 7</b></div><div class="stat"><small>Niz dni</small><b>🔥 ${niz(k)}</b></div><div class="stat"><small>Zvezdice</small><b>⭐ ${k.zvezde}</b></div><div class="stat"><small>Trenutni sklop</small><b>${s.glas} · ${POS[s.poz]}</b></div></div>
+<h3>Dnevi vadbe</h3>${dayStrip(k)}
+<h3>Delež potrjeno pravilnih (po oceni staršev)</h3>${chart(k)}<h3>Komentarji staršev</h3>${k.kom.map(c=>`<div class="cmt">${esc(c)}</div>`).join("")||"<p class='mut'>Ni komentarjev.</p>"}</div></div></div>`}
+
+function otrok(){const k=kid(),s=k.sklop,ws=words(),v=vaja(k),tot=ws.length*s.pon;
+const izbira=`<select aria-label="Izberi otroka" style="width:auto;padding:6px 8px" onchange="S.aktiven=+this.value;save();render()">${S.kids.map(x=>`<option value="${x.id}" ${x.id==k.id?"selected":""}>${x.av} ${esc(x.ime)}</option>`).join("")}</select>`;
+if(v.rep>=tot)return `<div class="phone"><div class="card" style="padding:12px 16px">${izbira}</div><div class="card wcard"><div class="pic">🏆</div><h2>Današnje vaje so opravljene!</h2><p>Bravo, ${esc(k.ime)}! Jutri nas čakajo nove kartice.</p><button class="btn big" onclick="znova()">Vadi še enkrat</button></div>${rewards(k)}</div>`;
+const w=ws[v.i%ws.length];return `<div class="phone"><div class="card" style="padding:12px 16px"><div class="row" style="justify-content:space-between;align-items:center">${izbira}<span>⭐ ${k.zvezde} · 🔥 ${niz(k)}</span></div><p style="margin:8px 0 0"><b>Živjo, ${esc(k.ime)}!</b></p><div class="prog" style="margin-top:10px" role="progressbar" aria-label="Napredek" aria-valuenow="${v.rep}" aria-valuemin="0" aria-valuemax="${tot}"><i style="width:${v.rep/tot*100}%"></i></div><small>Kartica ${v.rep+1} od ${tot} · glas ${s.glas}, ${POS[s.poz]}</small></div>
+<div class="card wcard"><div class="pic" aria-hidden="true">${w[1]}</div><div class="word">${mark(w[0],s.glas,s.poz)}</div>
+${REC.has(w[0])?`<button class="btn sec big" data-w="${esc(w[0])}" onclick="predvajaj(this.dataset.w)">🔊 Poslušaj besedo</button><p class="mut" style="font-size:14px">Predvajajte posnetek, otrok besedo ponovi.</p>`:`<p class="mut" style="font-size:15px">Starš počasi in razločno prebere besedo, otrok jo ponovi.</p>`}
+<div class="two"><button class="btn big ok" onclick="ans(1)">✅ Pravilno</button><button class="btn big again" onclick="ans(0)">💪 Še vadimo</button></div></div>
+${s.opomba?`<div class="card"><small>📝 Logoped: ${esc(s.opomba)}</small></div>`:""}</div>`}
+function znova(){const k=kid();k.vaja={datum:danes(),i:0,rep:0,ok:0};save();render()}
+function rewards(k){return `<div class="card"><h3 style="margin-top:0">Moja zbirka nalepk</h3><div class="stk">${ST.map((x,i)=>`<span class="${i<k.nalepke?"":"lock"}" aria-label="${i<k.nalepke?"nalepka":"zaklenjeno"}">${x}</span>`).join("")}</div></div>`}
+
+function ans(ok){const k=kid(),s=k.sklop,v=vaja(k),tot=words().length*s.pon;v.rep++;v.i++;if(ok){v.ok++;k.zvezde++}
+const st=k.stat[key(s)]||(k.stat[key(s)]=[0,0]);st[1]++;if(ok)st[0]++;
+if(v.rep>=tot){const d=danes();if(!k.dnevi.includes(d)){k.dnevi.push(d);k.dnevi=k.dnevi.slice(-90)}
+  let nova=null;if(k.nagradaDan!==d&&k.nalepke<ST.length){k.nalepke++;nova=ST[k.nalepke-1]}k.nagradaDan=d;
+  save();render();cele(k,v,nova)}else{save();render()}}
+
+let prejFokus=null;
+function cele(k,v,nova){const c=$("#cele");const nal=nova?`<p>Nova nalepka: <span style="font-size:40px">${nova}</span></p>`:k.nalepke>=ST.length?`<p>Zbral/-a si že vse nalepke! 🏆</p>`:`<p>Današnjo nalepko že imaš – jutri te čaka nova.</p>`;
+c.innerHTML=`<div class="card"><div style="font-size:80px" aria-hidden="true">🎉</div><h2 id="celeT">Super, ${esc(k.ime)}!</h2><p style="font-size:20px">Zbral/-a si <b>${v.ok} ⭐</b></p>${nal}<p>🔥 Niz: ${niz(k)} ${niz(k)==1?"dan":"dni"}</p><button class="btn big" id="celeOk" onclick="zapriCele()">Naprej</button></div>`;
+prejFokus=document.activeElement;c.classList.add("on");$("#celeOk").focus();
+if(!matchMedia("(prefers-reduced-motion: reduce)").matches)for(let i=0;i<30;i++){const e=document.createElement("div");e.className="conf";e.textContent=["🎉","⭐","🎈","✨","🌈"][i%5];e.style.left=Math.random()*100+"vw";e.style.animationDelay=Math.random()*.8+"s";document.body.append(e);setTimeout(()=>e.remove(),3500)}}
+function zapriCele(){$("#cele").classList.remove("on");const b=document.querySelector("#app button.big")||document.querySelector("#app button");(b&&document.contains(b)?b:prejFokus)?.focus()}
+document.addEventListener("keydown",e=>{if(e.key=="Escape"&&$("#cele").classList.contains("on"))zapriCele();if(e.key=="Tab"&&$("#cele").classList.contains("on")){e.preventDefault();$("#celeOk").focus()}});
+
+function stars(){const k=kid(),s=k.sklop,dn=dniTeden(k),st=k.stat[key(s)]||[0,0],p=st[1]?Math.round(st[0]/st[1]*100):0;return `<div class="phone" style="max-width:600px"><div class="card"><label for="ko" style="margin-top:0">Otrok</label><select id="ko" onchange="S.aktiven=+this.value;save();render()">${S.kids.map(x=>`<option value="${x.id}" ${x.id==k.id?"selected":""}>${esc(x.ime)}</option>`).join("")}</select></div>
+<div class="card"><h2 style="margin-top:0">Tedenski povzetek – ${esc(k.ime)}</h2><div class="row"><div class="stat"><small>Dni vadbe</small><b>${dn} / 7</b></div><div class="stat"><small>Pravilno (${s.glas} · ${POS[s.poz]})</small><b>${st[1]?p+" %":"–"}</b></div><div class="stat"><small>Nalepke</small><b>${k.nalepke} / ${ST.length}</b></div></div><p>${dn>=4?"Odlično! Redna vadba res pomaga. 🌟":"Poskusite vaditi vsaj 4 dni na teden – tudi 5 minut je dovolj."}</p>${dayStrip(k)}</div>
+<div class="card"><h3 style="margin-top:0">Sporočilo za logopeda</h3><label for="msg">Kako so potekale vaje? Kaj je bilo težko?</label><textarea id="msg" rows="4" placeholder="Npr. Pri besedi … se še zatika."></textarea><p><button class="btn" onclick="const v=$('#msg').value.trim();if(v){kid().kom.unshift(v);save();render();toast2('Sporočilo je shranjeno za logopeda.')}">Shrani sporočilo</button></p>${k.kom.map(c=>`<div class="cmt">${esc(c)}</div>`).join("")}</div></div>`}
+
+function render(){tabs();$("#app").innerHTML=S.vloga=="logoped"?logoped():S.vloga=="otrok"?otrok():stars()}
+render();
+DB.keys().then(ks=>{REC=new Set(ks||[]);render()}).catch(()=>{});
+
+/* ---------- Aplikacija (PWA) ---------- */
+if("serviceWorker"in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+let namestitev=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();namestitev=e;$("#namesti").hidden=false});
+$("#namesti").addEventListener("click",async()=>{if(!namestitev)return;namestitev.prompt();try{await namestitev.userChoice}catch(e){}namestitev=null;$("#namesti").hidden=true});
+window.addEventListener("appinstalled",()=>{$("#namesti").hidden=true;toast2("Aplikacija je nameščena. Najdeš jo na začetnem zaslonu.")});
+</script></body></html>
