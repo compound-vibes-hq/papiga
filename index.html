@@ -36,11 +36,41 @@ small,.mut{color:var(--mut)}
 .conf{position:fixed;top:-40px;font-size:28px;animation:fall 2.4s linear forwards;z-index:10;pointer-events:none}@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 @media (prefers-reduced-motion:reduce){.conf{display:none}.cele .card{animation:none}}
 footer{text-align:center;font-size:13px;color:var(--mut);padding:18px}
+.stk button{background:#fff8ef;border:2px solid transparent;border-radius:12px;padding:4px;font-size:30px;cursor:pointer;line-height:1.2}.stk button:hover{border-color:var(--pri)}
+/* Risanke */
+.ris{position:fixed;inset:0;z-index:20;display:none;overflow:hidden;cursor:pointer}.ris.on{display:block}
+.ris .act{position:absolute;transform:translate(-50%,-50%);line-height:1}.ris .act span{display:inline-block}
+.ris .txt{font-weight:900;color:#e63946;text-shadow:3px 3px 0 #fff;font-family:system-ui,sans-serif}
+.ris .cap{position:absolute;left:50%;bottom:calc(9% + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#fffffff0;color:#2d2a32;padding:12px 20px;border-radius:18px;font-size:22px;font-weight:800;text-align:center;width:max-content;max-width:88vw;animation:capin .6s 1s both}
+.ris .bar{position:absolute;left:0;top:env(safe-area-inset-top,0px);height:6px;background:#ffffffb0;animation:bar 5s linear both}
+.ris .zapri{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px))}
+@keyframes bar{from{width:0}to{width:100%}}
+@keyframes capin{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes rise{from{transform:translateY(60vh) scale(.3)}to{transform:none}}
+@keyframes twinkle{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.6}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes across{from{transform:translateX(-80vw)}to{transform:translateX(80vw)}}
+@keyframes walkin{from{transform:translateX(-70vw)}to{transform:none}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-24px)}}
+@keyframes bubble{from{transform:translateY(0);opacity:0}15%{opacity:.8}to{transform:translateY(-75vh);opacity:0}}
+@keyframes launch{0%,25%{transform:translateY(20vh)}100%{transform:translateY(-80vh)}}
+@keyframes grow{from{transform:scale(0)}70%{transform:scale(1.15)}to{transform:scale(1)}}
+@keyframes drop{0%{transform:translateY(-70vh)}60%{transform:translateY(0)}75%{transform:translateY(-30px)}100%{transform:translateY(0)}}
+@keyframes spin{from{transform:scale(.2) rotate(-360deg)}to{transform:scale(1) rotate(0)}}
+@keyframes float{from{transform:translate(0,45vh)}25%{transform:translate(-30px,20vh)}50%{transform:translate(30px,0)}75%{transform:translate(-20px,-20vh)}to{transform:translate(0,-40vh)}}
+@keyframes slow{from{transform:translateX(-45vw)}to{transform:translateX(22vw)}}
+@keyframes loop{0%{transform:translate(-40vw,-10vh)}25%{transform:translate(-10vw,-25vh)}50%{transform:translate(10vw,0)}75%{transform:translate(20vw,-15vh)}100%{transform:translate(28vw,14vh)}}
+@keyframes fadeout{0%,40%{opacity:1}100%{opacity:0}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes pop2{0%,55%{opacity:0;transform:scale(.4)}70%{opacity:1;transform:scale(1.25)}100%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.ris *{animation:none!important}}
 :focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
 </style></head><body>
 <header><h1>📒 Moj <span>zvezek</span> vaj</h1><button class="btn sm" id="namesti" hidden>📲 Namesti aplikacijo</button><nav role="tablist" id="tabs"></nav></header>
 <main id="app"></main>
 <div class="cele" id="cele" role="dialog" aria-modal="true" aria-labelledby="celeT"></div>
+<div class="ris" id="ris" role="dialog" aria-modal="true" onclick="zapriRis()"></div>
 <footer>Prototip – ni medicinski pripomoček; vaje določi logoped. · Vsi podatki so izmišljeni in shranjeni le v tem brskalniku.</footer>
 <script>
 /* ---------- Besede: [beseda, emoji] ----------
@@ -153,9 +183,31 @@ const w=ws[v.i%ws.length];return `<div class="phone"><div class="card" style="pa
 <div class="card wcard"><div class="pic" aria-hidden="true">${w.e}</div><div class="word">${mark(w.w,w.glas,w.poz)}</div>
 ${REC.has(w.w)?`<button class="btn sec big" data-w="${esc(w.w)}" onclick="predvajaj(this.dataset.w)">🔊 Poslušaj besedo</button><p class="mut" style="font-size:14px">Predvajajte posnetek, otrok besedo ponovi.</p>`:`<p class="mut" style="font-size:15px">Starš počasi in razločno prebere besedo, otrok jo ponovi.</p>`}
 <div class="two"><button class="btn big ok" onclick="ans(1)">✅ Pravilno</button><button class="btn big again" onclick="ans(0)">💪 Še vadimo</button></div></div>
-${s.opomba?`<div class="card"><small>📝 Logoped: ${esc(s.opomba)}</small></div>`:""}</div>`}
+${s.opomba?`<div class="card"><small>📝 Logoped: ${esc(s.opomba)}</small></div>`:""}${rewards(k)}</div>`}
 function znova(){const k=kid();k.vaja={datum:danes(),i:0,rep:0,ok:0};save();render()}
-function rewards(k){return `<div class="card"><h3 style="margin-top:0">Moja zbirka nalepk</h3><div class="stk">${ST.map((x,i)=>`<span class="${i<k.nalepke?"":"lock"}" aria-label="${i<k.nalepke?"nalepka":"zaklenjeno"}">${x}</span>`).join("")}</div></div>`}
+function rewards(k){return `<div class="card"><h3 style="margin-top:0">Moja zbirka nalepk</h3>${k.nalepke?`<p class="mut" style="margin-top:-6px;font-size:14px">Tapni nalepko in poglej njeno risanko 🎬</p>`:""}<div class="stk">${ST.map((x,i)=>i<k.nalepke?`<button onclick="risanka('${x}')" aria-label="Poglej risanko">${x}</button>`:`<span class="lock" aria-label="zaklenjeno">${x}</span>`).join("")}</div></div>`}
+
+/* ---------- Risanke za nalepke (≈5 s) ----------
+   igralec: [emoji ali besedilo, x %, y %, velikost px, gibanje, notranje gibanje, stalna preobrazba] */
+const RIS={
+"⭐":{bg:"linear-gradient(#1b1f4b,#4b3a7a)",t:"Zvezdica sveti samo zate!",a:[["🌙",82,15,64,"bob 2s ease-in-out infinite"],["✨",20,25,34,"twinkle 1s infinite"],["✨",75,62,28,"twinkle 1.3s .4s infinite"],["✨",28,70,24,"twinkle .9s .8s infinite"],["⭐",50,42,160,"rise 1.4s ease-out both","twinkle 1.2s 1.4s ease-in-out infinite"]]},
+"🦄":{bg:"linear-gradient(#bde0fe,#ffd6ff)",t:"Samorog teče po mavrici!",a:[["☁️",18,16,64,"bob 3s infinite"],["☁️",80,22,52,"bob 2.5s .5s infinite"],["🌈",50,40,230,"grow 1s ease-out both"],["🦄",50,64,120,"across 4.5s .3s linear both","hop .45s ease-in-out infinite","scaleX(-1)"]]},
+"🐙":{bg:"linear-gradient(#48cae4,#023e8a)",t:"Hobotnica maha z vsemi rokami!",a:[["⚪",30,85,22,"bubble 2.5s infinite"],["⚪",65,90,16,"bubble 2s .7s infinite"],["⚪",45,88,12,"bubble 3s 1.2s infinite"],["🐠",50,78,50,"across 5s linear both","","scaleX(-1)"],["🐙",50,45,150,"grow .8s both","shake 1s .8s ease-in-out infinite"]]},
+"🚀":{bg:"linear-gradient(#0b132b,#3a506b)",t:"Raketa leti na Luno!",a:[["🌙",78,14,72,"bob 2s infinite"],["✨",20,30,26,"twinkle 1s infinite"],["✨",60,24,22,"twinkle 1.2s .5s infinite"],["💨",50,88,70,"fadeout 1.6s .4s both"],["🚀",50,60,120,"launch 4s .4s ease-in both","shake .15s infinite","rotate(-45deg)"]]},
+"🌈":{bg:"linear-gradient(#a2d2ff,#ffffff)",t:"Po dežju pride mavrica!",a:[["🌧️",50,24,110,"fadeout 2s both"],["☀️",80,16,80,"fadein 1s 1.5s both","twinkle 2s 2.5s infinite"],["🌈",50,55,250,"grow 1.4s 1.8s ease-out both"]]},
+"🦖":{bg:"linear-gradient(#caf0f8,#b7e4c7)",t:"Dinozaver je zarjovel: RRRR!",a:[["🌴",14,58,90,""],["🌋",86,46,90,""],["🦖",50,62,130,"walkin 2s ease-out both","hop .4s ease-in-out 5","scaleX(-1)"],["RRRR!",50,28,56,"pop2 3s both"]]},
+"🎈":{bg:"linear-gradient(#ffcad4,#bde0fe)",t:"Balonček leti visoko v nebo!",a:[["☁️",20,30,70,"bob 3s infinite"],["☁️",78,55,56,"bob 2.4s .6s infinite"],["🎈",50,50,130,"float 5s ease-in-out both","shake 1.5s ease-in-out infinite"]]},
+"🐢":{bg:"linear-gradient(#d8f3dc,#95d5b2)",t:"Počasi, a zanesljivo do cilja!",a:[["🏁",86,60,70,""],["🌼",20,82,40,""],["🌼",62,86,32,""],["🐢",50,66,110,"slow 4.5s linear both","hop .9s ease-in-out infinite","scaleX(-1)"]]},
+"🍓":{bg:"linear-gradient(#fff0f3,#ffccd5)",t:"Mmm, sladke jagode!",a:[["🍓",40,62,64,"drop 1s .2s both"],["🍓",60,62,64,"drop 1s .8s both"],["🍓",50,58,72,"drop 1s 1.4s both"],["🧺",50,74,120,""],["💖",50,30,70,"pop2 3s 1s both"]]},
+"🏆":{bg:"radial-gradient(#fff3b0,#ffb703)",t:"Ti si pravi prvak!",a:[["🎉",20,28,64,"pop2 2s both"],["🎉",80,28,64,"pop2 2s .3s both","","scaleX(-1)"],["⭐",30,70,34,"twinkle 1s 1.4s infinite"],["⭐",72,72,30,"twinkle 1.2s 1.6s infinite"],["🏆",50,48,170,"spin 1.4s ease-out both","bob 1.2s 1.4s infinite"]]},
+"🐝":{bg:"linear-gradient(#e0f7fa,#fff9c4)",t:"Bzzz! Čebelica leti na rožo.",a:[["🌻",80,68,110,"grow 1s both"],["🌼",20,78,50,""],["🐝",50,45,70,"loop 4.5s ease-in-out both","hop .3s ease-in-out infinite","scaleX(-1)"]]},
+"🌻":{bg:"linear-gradient(#90e0ef,#ffe5b4 72%,#a7c957 72%)",t:"Sončnica raste proti soncu!",a:[["☀️",80,15,80,"twinkle 2s infinite"],["🌱",50,80,60,"fadeout 1.5s both"],["🌻",50,58,150,"grow 2s 1s ease-out both","shake 2s 3s ease-in-out infinite"]]}};
+let risT=null;
+function melodija(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),t0=c.currentTime;[523,659,784,1047,784,1047].forEach((f,i)=>{const o=c.createOscillator(),g=c.createGain(),t=t0+i*.18;o.type="triangle";o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.15,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.3);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.35)});setTimeout(()=>c.close(),2500)}catch(e){}}
+function risanka(e){const r=RIS[e];if(!r)return;const el=$("#ris");el.style.background=r.bg;
+el.innerHTML=`<div class="bar"></div>`+r.a.map(([t,x,y,s,m,n,f])=>`<span class="act" aria-hidden="true" style="left:${x}%;top:${y}%;font-size:${s}px"><span style="${f?"transform:"+f:""}"><span style="animation:${m||"none"}"><span class="${/^[A-Z]/.test(t)?"txt":""}" style="animation:${n||"none"}">${t}</span></span></span></span>`).join("")+`<div class="cap">${r.t}</div><button class="btn sec sm zapri" aria-label="Zapri risanko">✕</button>`;
+el.setAttribute("aria-label",r.t);el.classList.add("on");melodija();clearTimeout(risT);risT=setTimeout(zapriRis,5500)}
+function zapriRis(){clearTimeout(risT);const el=$("#ris");el.classList.remove("on");el.innerHTML=""}
 
 function ans(ok){const k=kid(),s=k.sklop,v=vaja(k),ws=words(),tot=ws.length*s.pon,w=ws[v.i%ws.length],kl=w.glas+"-"+w.poz;v.rep++;v.i++;if(ok){v.ok++;k.zvezde++}
 const st=k.stat[kl]||(k.stat[kl]=[0,0]);st[1]++;if(ok)st[0]++;
@@ -165,11 +217,11 @@ if(v.rep>=tot){const d=danes();if(!k.dnevi.includes(d)){k.dnevi.push(d);k.dnevi=
 
 let prejFokus=null;
 function cele(k,v,nova){const c=$("#cele");const nal=nova?`<p>Nova nalepka: <span style="font-size:40px">${nova}</span></p>`:k.nalepke>=ST.length?`<p>Zbral/-a si že vse nalepke! 🏆</p>`:`<p>Današnjo nalepko že imaš – jutri te čaka nova.</p>`;
-c.innerHTML=`<div class="card"><div style="font-size:80px" aria-hidden="true">🎉</div><h2 id="celeT">Super, ${esc(k.ime)}!</h2><p style="font-size:20px">Zbral/-a si <b>${v.ok} ⭐</b></p>${nal}<p>🔥 Niz: ${niz(k)} ${niz(k)==1?"dan":"dni"}</p><button class="btn big" id="celeOk" onclick="zapriCele()">Naprej</button></div>`;
+c.innerHTML=`<div class="card"><div style="font-size:80px" aria-hidden="true">🎉</div><h2 id="celeT">Super, ${esc(k.ime)}!</h2><p style="font-size:20px">Zbral/-a si <b>${v.ok} ⭐</b></p>${nal}<p>🔥 Niz: ${niz(k)} ${niz(k)==1?"dan":"dni"}</p>${nova?`<button class="btn big ok" style="margin-bottom:10px" onclick="zapriCele();risanka('${nova}')">🎬 Poglej risanko</button>`:""}<button class="btn big" id="celeOk" onclick="zapriCele()">Naprej</button></div>`;
 prejFokus=document.activeElement;c.classList.add("on");$("#celeOk").focus();
 if(!matchMedia("(prefers-reduced-motion: reduce)").matches)for(let i=0;i<30;i++){const e=document.createElement("div");e.className="conf";e.textContent=["🎉","⭐","🎈","✨","🌈"][i%5];e.style.left=Math.random()*100+"vw";e.style.animationDelay=Math.random()*.8+"s";document.body.append(e);setTimeout(()=>e.remove(),3500)}}
 function zapriCele(){$("#cele").classList.remove("on");const b=document.querySelector("#app button.big")||document.querySelector("#app button");(b&&document.contains(b)?b:prejFokus)?.focus()}
-document.addEventListener("keydown",e=>{if(e.key=="Escape"&&$("#cele").classList.contains("on"))zapriCele();if(e.key=="Tab"&&$("#cele").classList.contains("on")){e.preventDefault();$("#celeOk").focus()}});
+document.addEventListener("keydown",e=>{if(e.key=="Escape"&&$("#ris").classList.contains("on")){zapriRis();return}if(e.key=="Escape"&&$("#cele").classList.contains("on"))zapriCele();if(e.key=="Tab"&&$("#cele").classList.contains("on")){e.preventDefault();$("#celeOk").focus()}});
 
 function stars(){const k=kid(),s=k.sklop,dn=dniTeden(k),st=s.sklopi.reduce((a,x)=>{const t=k.stat[x.glas+"-"+x.poz]||[0,0];return[a[0]+t[0],a[1]+t[1]]},[0,0]),p=st[1]?Math.round(st[0]/st[1]*100):0;return `<div class="phone" style="max-width:600px"><div class="card"><label for="ko" style="margin-top:0">Otrok</label><select id="ko" onchange="S.aktiven=+this.value;save();render()">${S.kids.map(x=>`<option value="${x.id}" ${x.id==k.id?"selected":""}>${esc(x.ime)}</option>`).join("")}</select></div>
 <div class="card"><h2 style="margin-top:0">Tedenski povzetek – ${esc(k.ime)}</h2><div class="row"><div class="stat"><small>Dni vadbe</small><b>${dn} / 7</b></div><div class="stat"><small>Pravilno (${s.sklopi.map(x=>x.glas).join(", ")})</small><b>${st[1]?p+" %":"–"}</b></div><div class="stat"><small>Nalepke</small><b>${k.nalepke} / ${ST.length}</b></div></div><p>${dn>=4?"Odlično! Redna vadba res pomaga. 🌟":"Poskusite vaditi vsaj 4 dni na teden – tudi 5 minut je dovolj."}</p>${dayStrip(k)}</div>
