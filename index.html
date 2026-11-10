@@ -84,7 +84,7 @@ footer{text-align:center;font-size:13px;color:var(--mut);padding:18px}
 <div class="cele" id="cele" role="dialog" aria-modal="true" aria-labelledby="celeT"></div>
 <div class="ris" id="ris" role="dialog" aria-modal="true" onclick="zapriRis()"></div>
 <div class="igra" id="igra" role="dialog" aria-modal="true" aria-label="Igra"></div>
-<footer>Prototip – ni medicinski pripomoček; vaje določi logoped. · Podatki ostanejo samo v tej napravi; drugam gredo le z gumbom 📤 Pošlji.</footer>
+<footer>Prototip – ni medicinski pripomoček; vaje določi logoped. · Podatki so v tej napravi. Če otroka povežete (☁️), se kopija hrani v oblaku v EU.</footer>
 <script>
 /* ---------- Besede: [beseda, emoji] ----------
    Konec besede pri Z in Ž je namenoma izpuščen (razzvenevanje: voz [vos], nož [noš]).
@@ -117,7 +117,8 @@ function seed(){const d=a=>a.map(premik);return {v:2,aktiven:1,vloga:"logoped",k
 {id:3,uid:"demo-ema",ime:"Ema",starost:4,av:"🐼",sklop:{glas:"C",poz:"k",pon:2,opomba:"Kratke vaje, največ 5 minut."},dnevi:d([-1,-2,-3,-4,-5]),stat:{"C-k":[38,42],"S-z":[25,30],"Z-z":[20,28]},kom:["Vsak dan po vrtcu, gre ji vedno bolje.","Zajec je njena najljubša kartica."],zvezde:63,nalepke:7,nagradaDan:null,vaja:null}]}}
 function load(){try{const x=JSON.parse(localStorage.getItem("pzv2"));if(x&&x.v===2&&Array.isArray(x.kids))return x}catch(e){}return seed()}
 let S=load();
-function save(){try{localStorage.setItem("pzv2",JSON.stringify(S))}catch(e){}}
+function shrani(){try{localStorage.setItem("pzv2",JSON.stringify(S))}catch(e){}}
+function save(){shrani();if(typeof oblakPlan=="function")oblakPlan()}
 
 /* ---------- Posnetki (IndexedDB) ---------- */
 const DB=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open("pzv-posnetki",1);r.onupgradeneeded=()=>r.result.createObjectStore("rec");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
@@ -134,8 +135,8 @@ function dodajOtroka(e){e.preventDefault();const f=e.target,ime=f.ime.value.trim
 const id=Math.max(0,...S.kids.map(k=>k.id))+1;S.kids.push({id,ime,starost:st,av:novAv,sklop:{sklopi:[{glas:"S",poz:"z"}],pon:2,opomba:""},dnevi:[],stat:{},kom:[],zvezde:0,nalepke:0,nagradaDan:null,vaja:null,urnik:{dni:[1,1,1,1,1,0,0],ura:"17:00"}});
 fixKid(S.kids.at(-1));S.aktiven=id;dodaj=false;save();cisti=true;render();toast2(ime+" je dodan/-a. Zdaj mu/ji dodelite vaje.");return false}
 const jeDemo=k=>String(k.uid||"").startsWith("demo-");
-function odstraniDemo(){const r=S.kids.filter(k=>!jeDemo(k));if(!r.length){toast2("Najprej dodajte svojega otroka, potem lahko primere odstranite.");return}if(!confirm("Odstranim izmišljene primere (Lana, Jakob, Ema)?"))return;S.kids=r;if(!S.kids.some(x=>x.id==S.aktiven))S.aktiven=S.kids[0].id;save();render();toast2("Primeri so odstranjeni.")}
-function odstrani(id){if(S.kids.length<2){toast2("Ostati mora vsaj en otrok.");return}const k=S.kids.find(x=>x.id==id)||kid();if(!confirm("Odstranim otroka "+k.ime+" in vse njegove podatke?"))return;S.kids=S.kids.filter(x=>x.id!==k.id);if(!S.kids.some(x=>x.id==S.aktiven))S.aktiven=S.kids[0].id;save();render();toast2(k.ime+" je odstranjen/-a.")}
+function odstraniDemo(){const r=S.kids.filter(k=>!jeDemo(k));if(!r.length){toast2("Najprej dodajte svojega otroka, potem lahko primere odstranite.");return}if(!confirm("Odstranim izmišljene primere (Lana, Jakob, Ema)?"))return;S.kids.filter(jeDemo).forEach(k=>{if(k.koda)oblakOdjavi(k.koda)});S.kids=r;if(!S.kids.some(x=>x.id==S.aktiven))S.aktiven=S.kids[0].id;save();render();toast2("Primeri so odstranjeni.")}
+function odstrani(id){if(S.kids.length<2){toast2("Ostati mora vsaj en otrok.");return}const k=S.kids.find(x=>x.id==id)||kid();if(!confirm("Odstranim otroka "+k.ime+" in vse njegove podatke?"))return;if(k.koda)oblakOdjavi(k.koda);S.kids=S.kids.filter(x=>x.id!==k.id);if(!S.kids.some(x=>x.id==S.aktiven))S.aktiven=S.kids[0].id;save();render();toast2(k.ime+" je odstranjen/-a.")}
 
 /* ---------- Pomožne ---------- */
 const $=s=>document.querySelector(s),kid=()=>S.kids.find(k=>k.id==S.aktiven)||S.kids[0],esc=t=>String(t).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -155,14 +156,14 @@ function zgradiW(){Object.keys(W).forEach(g=>delete W[g]);Object.assign(W,JSON.p
   S.lastne.forEach(x=>{const g=W[x.glas]||(W[x.glas]={}),l=g[x.poz]||(g[x.poz]=[]);if(!l.some(y=>y[0]==x.w))l.push([x.w,x.e||"🗣️"])})}
 zgradiW();
 function preveriPoz(w,g,p){const l=w.toLowerCase(),G=g.toLowerCase();if(p=="z")return l.startsWith(G);if(p=="k")return l.endsWith(G);const i=l.indexOf(G,1);return i>0&&i<l.length-G.length}
-function dodajBesedo(e){e.preventDefault();const f=e.target,w=f.bw.value.trim().toLowerCase(),g=f.bg.value.trim().toUpperCase(),p=f.bp.value,em=f.be.value.trim().slice(0,8)||"🗣️";
+function dodajBesedo(e){e.preventDefault();const f=e.target,w=f.bw.value.trim().toLowerCase(),g=f.bg.value.trim().toUpperCase(),p=f.bp.value,em=cE(f.be.value.trim());
   if(!w||!g){toast2("Vpišite besedo in glas.");return false}
   if(!/^[A-ZČŠŽĆĐ]{1,3}$/.test(g)){toast2("Glas naj bo ena ali dve črki, npr. K ali LJ.");return false}
   if(!/^[a-zčšžćđ]+$/.test(w)){toast2("Beseda naj vsebuje samo črke.");return false}
   if(!preveriPoz(w,g,p)){toast2("Beseda »"+w+"« nima glasu "+g+" na položaju »"+POS[p]+"«.");return false}
   if(((W[g]||{})[p]||[]).some(y=>y[0]==w)){toast2("Ta beseda je že v seznamu.");return false}
-  S.lastne.push({w,e:em,glas:g,poz:p});zgradiW();save();cisti=true;render();toast2("Beseda »"+w+"« je dodana h glasu "+g+".");return false}
-function odstraniBesedo(i){const x=S.lastne[i];if(!x)return;S.lastne.splice(i,1);zgradiW();S.kids.forEach(fixSklop);save();render();toast2("Beseda »"+x.w+"« je odstranjena.")}
+  S.lastne.push({w,e:em,glas:g,poz:p});S.lastneT=Date.now();zgradiW();save();cisti=true;render();toast2("Beseda »"+w+"« je dodana h glasu "+g+".");return false}
+function odstraniBesedo(i){const x=S.lastne[i];if(!x)return;S.lastne.splice(i,1);S.lastneT=Date.now();zgradiW();S.kids.forEach(fixSklop);save();render();toast2("Beseda »"+x.w+"« je odstranjena.")}
 
 /* ---------- Stopnje (besede, povedi, zgodbe), igre, sporočila, prenos ---------- */
 const rid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
@@ -212,18 +213,18 @@ function dodajPoved(e){e.preventDefault();const f=e.target,g=f.pg.value.trim().t
   if(t.length<3){toast2("Vpišite besedilo.");return false}
   if(!t.toLowerCase().includes(g.toLowerCase())){toast2("Besedilo ne vsebuje glasu "+g+".");return false}
   if(S.lastneP.some(x=>x.t==t&&x.glas==g)){toast2("To besedilo že obstaja.");return false}
-  S.lastneP.push({t:t.slice(0,600),glas:g,tip});save();cisti=true;render();toast2((tip=="zgodba"?"Zgodba":"Poved")+" je dodana h glasu "+g+".");return false}
-function odstraniPoved(i){if(!S.lastneP[i])return;S.lastneP.splice(i,1);save();render();toast2("Odstranjeno.")}
+  S.lastneP.push({t:t.slice(0,600),glas:g,tip});S.lastnePT=Date.now();save();cisti=true;render();toast2((tip=="zgodba"?"Zgodba":"Poved")+" je dodana h glasu "+g+".");return false}
+function odstraniPoved(i){if(!S.lastneP[i])return;S.lastneP.splice(i,1);S.lastnePT=Date.now();save();render();toast2("Odstranjeno.")}
 
 /* Sporočila med logopedom in staršem */
 const cas=t=>{const d=new Date(t);return d.getDate()+". "+(d.getMonth()+1)+". ob "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 function klepet(k,jaz){const m=k.sporocila;
   return `<div class="klepet">${m.length?m.map(x=>`<div class="msg ${x.od==jaz?"moj":""}"><small>${x.od=="logoped"?"🩺 Logoped":"👪 Starš"} · ${cas(x.t)}</small>${esc(x.b)}</div>`).join(""):`<p class="mut" style="font-size:14px;margin:0">Še ni sporočil.</p>`}</div>
 <form onsubmit="return posljiSporocilo(event,'${jaz}')" class="row" style="gap:8px;margin-top:8px;flex-wrap:nowrap;align-items:flex-end"><label for="msg-${jaz}" class="sr">Novo sporočilo</label><textarea id="msg-${jaz}" name="m" rows="2" style="flex:1" maxlength="1000" placeholder="${jaz=="logoped"?"Npr. Ta teden poudarite glas R na koncu besede.":"Npr. Pri besedi škatla se še zatika."}"></textarea><button class="btn" type="submit" aria-label="Pošlji sporočilo">➤</button></form>`}
-function posljiSporocilo(e,jaz){e.preventDefault();const v=e.target.m.value.trim();if(!v)return false;const k=kid();k.sporocila.push({id:rid(),od:jaz=="logoped"?"logoped":"stars",t:Date.now(),b:v.slice(0,1000)});save();cisti=true;render();toast2("Sporočilo je shranjeno. Drugi osebi ga pošljete z gumbom 📤 Pošlji.");return false}
+function posljiSporocilo(e,jaz){e.preventDefault();const v=e.target.m.value.trim();if(!v)return false;const k=kid();k.sporocila.push({id:rid(),od:jaz=="logoped"?"logoped":"stars",t:Date.now(),b:v.slice(0,1000)});save();cisti=true;render();toast2(k.koda?"Sporočilo je poslano.":"Sporočilo je shranjeno. Drugi osebi ga pošljete, ko otroka povežete (☁️).");return false}
 
 /* Prenos med telefoni z datoteko (dokler ni oblaka) */
-function prenosHTML(){return `<div class="card"><h3 style="margin-top:0">🔄 Prenos med telefoni</h3><p class="mut" style="font-size:14px;margin-top:0">Logoped in starš si podatke izbranega otroka izmenjata z datoteko: vaje, urnik, sporočila, napredek in posnetke. <b>📤 Pošlji</b> pripravi datoteko, ki jo pošljete po Vibru, WhatsAppu ali e-pošti. Prejemnik datoteko shrani v telefon, v aplikaciji tapne <b>📥 Prejmi</b> in jo izbere.</p><div class="row" style="gap:8px"><button class="btn" onclick="posljiPodatke()">📤 Pošlji</button><button class="btn sec" onclick="prejmi()">📥 Prejmi</button></div></div>`}
+function prenosHTML(){return `<p class="mut" style="font-size:14px">Logoped in starš si podatke izbranega otroka izmenjata z datoteko: vaje, urnik, sporočila, napredek in posnetke. <b>📤 Pošlji</b> pripravi datoteko, ki jo pošljete po Vibru, WhatsAppu ali e-pošti. Prejemnik datoteko shrani v telefon, v aplikaciji tapne <b>📥 Prejmi</b> in jo izbere.</p><div class="row" style="gap:8px"><button class="btn" onclick="posljiPodatke()">📤 Pošlji</button><button class="btn sec" onclick="prejmi()">📥 Prejmi</button></div>`}
 const b64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b)});
 async function izvoz(){const k=kid(),bes=new Set(besede(k).map(x=>x.w));["poved","zgodba"].forEach(st=>kartice({...k,sklop:{...k.sklop,stopnja:st}}).forEach(x=>bes.add(x.w)));
   const posnetki={};for(const w of bes){if(REC.has(w)){try{const bl=await DB.get(w);if(bl)posnetki[w]=await b64(bl)}catch(e){}}}
@@ -235,18 +236,106 @@ function prejmi(){const i=document.createElement("input");i.type="file";i.accept
 async function uvozi(d){
   const kl=x=>x.w+"|"+x.glas+"|"+x.poz,ob=new Set(S.lastne.map(kl));(Array.isArray(d.lastne)?d.lastne:[]).forEach(x=>{if(x&&okBes(x.w)&&okGlas(x.glas)&&POS[x.poz]&&!ob.has(kl(x))){S.lastne.push({w:x.w,glas:x.glas,poz:x.poz,e:cE(x.e)});ob.add(kl(x))}});
   const kp=x=>x.t+"|"+x.glas,obp=new Set(S.lastneP.map(kp));(Array.isArray(d.lastneP)?d.lastneP:[]).forEach(x=>{if(x&&typeof x.t=="string"&&x.t.length>=3&&okGlas(x.glas)&&!obp.has(kp(x))){S.lastneP.push({t:x.t.slice(0,600),glas:x.glas,tip:x.tip=="zgodba"?"zgodba":"poved"});obp.add(kp(x))}});
-  zgradiW();
+  S.lastneT=S.lastnePT=Date.now();zgradiW();
   const samoDemo=S.kids.every(jeDemo);const o=JSON.parse(JSON.stringify(d.otrok));delete o.vaja;fixKid(o);let k=S.kids.find(x=>x.uid===o.uid),nov=false;
   if(!k){k={...o,id:Math.max(0,...S.kids.map(x=>x.id))+1,vaja:null};S.kids.push(k);nov=true;if(samoDemo&&!jeDemo(k)){S.kids=[k];if(d.od=="logoped")S.vloga="otrok"}}
-  else{if(o.sklopT>k.sklopT){k.sklop=o.sklop;k.sklopT=o.sklopT;k.ime=o.ime;k.starost=o.starost;k.av=o.av}
-    if(o.urnikT>k.urnikT){k.urnik=o.urnik;k.urnikT=o.urnikT}
-    k.dnevi=[...new Set([...k.dnevi,...o.dnevi])].sort().slice(-90);
-    for(const[x,[ok,t]]of Object.entries(o.stat)){const m=k.stat[x];if(!m||t>m[1])k.stat[x]=[ok,t]}
-    k.zvezde=Math.max(k.zvezde,o.zvezde);k.nalepke=Math.max(k.nalepke,o.nalepke);if((o.nagradaDan||"")>(k.nagradaDan||""))k.nagradaDan=o.nagradaDan;
-    const ids=new Set(k.sporocila.map(x=>x.id));o.sporocila.forEach(x=>{if(!ids.has(x.id))k.sporocila.push(x)});k.sporocila.sort((a,b)=>a.t-b.t)}
+  else zdruziOtroka(k,o);
   S.kids.forEach(fixKid);
   let n=0;for(const[w,url]of Object.entries(d.posnetki&&typeof d.posnetki=="object"?d.posnetki:{})){if(typeof url!="string"||w.length>600||!/^data:(audio|video)\//.test(url))continue;try{const bl=await (await fetch(url)).blob();await DB.put(w,bl);REC.add(w);n++}catch(e){}}
   S.aktiven=k.id;save();render();toast2((nov?"Dodan je nov otrok: ":"Posodobljeno: ")+k.ime+(n?" · posnetkov: "+n:""));return k}
+
+/* ---------- Oblak: samodejno usklajevanje med telefoni (Firebase, EU) ----------
+   Vsak povezan otrok ima kodo (12 znakov). Kdor ima kodo, lahko bere in piše podatke tega otroka.
+   Naprava je vedno glavni vir; oblak je kopija, ki se združuje (nič se ne prepiše na slepo). */
+const FBV="10.14.1",FBC={apiKey:"AIzaSyAYk4Sr95QKPbk7XeLMfTd8qWP-6Z7S6ng",authDomain:"papiga-11a23.firebaseapp.com",projectId:"papiga-11a23",storageBucket:"papiga-11a23.firebasestorage.app",messagingSenderId:"505349525225",appId:"1:505349525225:web:873f6d4102c56cb72e2a78"};
+if(!S.recT||typeof S.recT!="object")S.recT={};S.lastneT=+S.lastneT||0;S.lastnePT=+S.lastnePT||0;
+const cistiL=a=>(Array.isArray(a)?a:[]).filter(x=>x&&okBes(x.w)&&okGlas(x.glas)&&POS[x.poz]).map(x=>({w:x.w,glas:x.glas,poz:x.poz,e:cE(x.e)}));
+const cistiP=a=>(Array.isArray(a)?a:[]).filter(x=>x&&typeof x.t=="string"&&x.t.length>=3&&okGlas(x.glas)).map(x=>({t:x.t.slice(0,600),glas:x.glas,tip:x.tip=="zgodba"?"zgodba":"poved"}));
+S.lastne=cistiL(S.lastne);S.lastneP=cistiP(S.lastneP);zgradiW();
+const OB={api:null,nalaga:null,sub:{},zadnji:{},idx:{},stanje:{},cas:{},t:null,dela:false,se:false,prenasam:new Set()};
+const kanon=x=>Array.isArray(x)?"["+x.map(kanon).join(",")+"]":x&&typeof x=="object"?"{"+Object.keys(x).filter(k=>x[k]!==undefined).sort().map(k=>JSON.stringify(k)+":"+kanon(x[k])).join(",")+"}":JSON.stringify(x===undefined?null:x);
+const vecji=(a,b)=>kanon(a)>kanon(b);
+const hid=s=>{let a=0xdeadbeef^s.length,b=0x41c6ce57^s.length;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return (b>>>0).toString(16).padStart(8,"0")+(a>>>0).toString(16).padStart(8,"0")};
+const okKoda=k=>typeof k=="string"&&/^[A-HJ-NP-Z2-9]{12}$/.test(k),lepaKoda=k=>k.replace(/(.{4})(?=.)/g,"$1-");
+function novaKoda(){const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";return [...crypto.getRandomValues(new Uint8Array(12))].map(x=>A[x%32]).join("")}
+const cakaj=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error("cas")),ms))]);
+const sortL=a=>[...a].sort((x,y)=>(x.w+"|"+x.glas+"|"+x.poz)<(y.w+"|"+y.glas+"|"+y.poz)?-1:1),sortP=a=>[...a].sort((x,y)=>(x.glas+"|"+x.t)<(y.glas+"|"+y.t)?-1:1);
+function fb(){if(OB.api)return Promise.resolve(OB.api);if(window.__oblakMock){OB.api=window.__oblakMock;return Promise.resolve(OB.api)}
+  if(!OB.nalaga)OB.nalaga=(async()=>{const B="https://www.gstatic.com/firebasejs/"+FBV+"/";
+    const[a,u,f]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-auth.js"),import(B+"firebase-firestore.js")]);
+    const app=a.initializeApp(FBC),auth=u.getAuth(app);await new Promise(r=>{const off=u.onAuthStateChanged(auth,()=>{off();r()},()=>r())});if(!auth.currentUser)await u.signInAnonymously(auth);
+    const db=f.getFirestore(app),D=k=>f.doc(db,"otroci",k),R=(k,id)=>f.doc(db,"otroci",k,"posnetki",id);
+    OB.api={get:async k=>{const s=await f.getDoc(D(k));return s.exists()?s.data():null},set:(k,d)=>f.setDoc(D(k),d),
+      listen:(k,cb)=>f.onSnapshot(D(k),s=>{if(s.exists()&&!s.metadata.hasPendingWrites)cb(s.data())},e=>cb(null,e)),
+      putRec:(k,id,d)=>f.setDoc(R(k,id),d),getRec:async(k,id)=>{const s=await f.getDoc(R(k,id));return s.exists()?s.data():null}};
+    return OB.api})().catch(e=>{OB.nalaga=null;throw e});
+  return OB.nalaga}
+/* Združevanje dveh kopij istega otroka; na obeh napravah da enak rezultat. */
+function zdruziOtroka(k,o){
+  if(o.sklopT>k.sklopT||(o.sklopT==k.sklopT&&vecji([o.sklop,o.ime,o.starost,o.av],[k.sklop,k.ime,k.starost,k.av]))){k.sklop=o.sklop;k.sklopT=o.sklopT;k.ime=o.ime;k.starost=o.starost;k.av=o.av}
+  if(o.urnikT>k.urnikT||(o.urnikT==k.urnikT&&vecji(o.urnik,k.urnik))){k.urnik=o.urnik;k.urnikT=o.urnikT}
+  k.dnevi=[...new Set([...k.dnevi,...o.dnevi])].sort().slice(-90);
+  for(const[x,[ok,t]]of Object.entries(o.stat)){const m=k.stat[x];if(!m||t>m[1]||(t==m[1]&&ok>m[0]))k.stat[x]=[ok,t]}
+  k.zvezde=Math.max(k.zvezde,o.zvezde);k.nalepke=Math.max(k.nalepke,o.nalepke);if((o.nagradaDan||"")>(k.nagradaDan||""))k.nagradaDan=o.nagradaDan;
+  const ids=new Set(k.sporocila.map(x=>x.id));o.sporocila.forEach(x=>{if(!ids.has(x.id))k.sporocila.push(x)});k.sporocila.sort((a,b)=>a.t-b.t||(a.id<b.id?-1:1))}
+function oblakKnjiznica(d){let sp=false;const L=cistiL(d.lastne),T=+d.lastneT||0,P=cistiP(d.lastneP),PT=+d.lastnePT||0;
+  if(T>S.lastneT||(T==S.lastneT&&vecji(sortL(L),sortL(S.lastne)))){S.lastne=L;S.lastneT=T;sp=true}
+  if(PT>S.lastnePT||(PT==S.lastnePT&&vecji(sortP(P),sortP(S.lastneP)))){S.lastneP=P;S.lastnePT=PT;sp=true}
+  if(sp){zgradiW();S.kids.forEach(fixSklop)}}
+function oblakPaket(k,idx){const{vaja,id,...o}=k,c=JSON.parse(JSON.stringify(o));c.dnevi.sort();c.sporocila.sort((a,b)=>a.t-b.t||(a.id<b.id?-1:1));
+  return kanon({otrok:c,lastne:sortL(S.lastne),lastneT:S.lastneT,lastneP:sortP(S.lastneP),lastnePT:S.lastnePT,rec:idx})}
+function oblakPrejmi(koda,data,izPoslusalca){const k=S.kids.find(x=>x.koda===koda);if(!k||!data||typeof data.json!="string")return;
+  OB.stanje[koda]="ok";OB.cas[koda]=Date.now();if(data.json===OB.zadnji[koda]){if(izPoslusalca)render();return}
+  let d;try{d=JSON.parse(data.json)}catch(e){return}if(!d||!d.otrok||typeof d.otrok!="object")return;
+  oblakKnjiznica(d);const o=JSON.parse(JSON.stringify(d.otrok));delete o.vaja;fixKid(o);zdruziOtroka(k,o);fixKid(k);k.koda=koda;
+  const idx=OB.idx[koda]||(OB.idx[koda]={});for(const[id,x]of Object.entries(d.rec&&typeof d.rec=="object"?d.rec:{})){if(x&&typeof x.w=="string"&&x.w.length<=600&&+x.t>0&&(!idx[id]||idx[id].t<+x.t))idx[id]={w:x.w,t:+x.t}}
+  OB.zadnji[koda]=data.json;shrani();render();oblakPosnetki(koda);
+  if(izPoslusalca&&oblakPaket(k,idx)!==data.json)oblakPlan(400)}
+async function oblakPosnetki(koda){let n=0;for(const[id,x]of Object.entries(OB.idx[koda]||{})){const moj=S.recT[x.w]||(REC.has(x.w)?1:0);if(moj>=x.t)continue;
+    const kl=koda+id+x.t;if(OB.prenasam.has(kl))continue;OB.prenasam.add(kl);
+    try{const api=await fb(),r=await cakaj(api.getRec(koda,id),20000);if(r&&typeof r.data=="string"&&/^data:(audio|video)\//.test(r.data)){const bl=await(await fetch(r.data)).blob();await DB.put(x.w,bl);REC.add(x.w);S.recT[x.w]=x.t;n++}}catch(e){}
+    OB.prenasam.delete(kl)}
+  if(n){shrani();render()}}
+async function oblakPotisni(k){const koda=k.koda;if(!okKoda(koda))return;const api=await fb();
+  const r=await cakaj(api.get(koda),20000);if(r)oblakPrejmi(koda,r,false);
+  const idx={...(OB.idx[koda]||{})},bes=new Set(besede(k).map(x=>x.w));["poved","zgodba"].forEach(st=>kartice({...k,sklop:{...k.sklop,stopnja:st}}).forEach(x=>bes.add(x.w)));
+  for(const w of bes){if(!REC.has(w))continue;const t=S.recT[w]||1,id=hid(w);if(idx[id]&&idx[id].t>=t)continue;
+    const bl=await DB.get(w);if(!bl)continue;const url=await b64(bl);if(url.length>900000||!/^data:(audio|video)\//.test(url))continue;
+    await cakaj(api.putRec(koda,id,{w,data:url,t}),30000);idx[id]={w,t}}
+  OB.idx[koda]=idx;const json=oblakPaket(k,idx);
+  if(json!==OB.zadnji[koda]){await cakaj(api.set(koda,{json,v:1,t:Date.now()}),20000);OB.zadnji[koda]=json}
+  OB.stanje[koda]="ok";OB.cas[koda]=Date.now()}
+function oblakNaroci(koda){if(OB.sub[koda]||!OB.api)return;OB.sub[koda]=OB.api.listen(koda,(d,e)=>{if(e){OB.stanje[koda]="brez";render();return}oblakPrejmi(koda,d,true)})}
+function oblakOdjavi(koda){if(OB.sub[koda]){try{OB.sub[koda]()}catch(e){}delete OB.sub[koda]}delete OB.stanje[koda];delete OB.zadnji[koda];delete OB.idx[koda]}
+function oblakPlan(ms){if(!S.kids.some(k=>okKoda(k.koda)))return;clearTimeout(OB.t);OB.t=setTimeout(oblakVse,ms||1200)}
+async function oblakVse(){if(OB.dela){OB.se=true;return}OB.dela=true;let sp=false;
+  for(const k of S.kids.filter(x=>okKoda(x.koda))){const prej=OB.stanje[k.koda];try{await fb();oblakNaroci(k.koda);await oblakPotisni(k)}catch(e){OB.stanje[k.koda]="brez"}if(prej!==OB.stanje[k.koda])sp=true}
+  OB.dela=false;if(sp)render();
+  if(OB.se){OB.se=false;oblakPlan(300)}else if(Object.values(OB.stanje).includes("brez")){clearTimeout(OB.t);OB.t=setTimeout(oblakVse,30000)}}
+async function ustvariPovezavo(){const k=kid();if(k.koda)return;toast2("Ustvarjam povezavo …");k.koda=novaKoda();
+  try{await fb();await oblakPotisni(k);oblakNaroci(k.koda);shrani();render();toast2("Povezava je ustvarjena. Pošljite jo staršem.")}
+  catch(e){oblakOdjavi(k.koda);delete k.koda;shrani();render();toast2("Povezave ni bilo mogoče ustvariti. Preverite internet in poskusite znova.")}}
+async function deliPovezavo(){const k=kid();if(!k.koda)return;const url=naslov()+"?koda="+k.koda,text="Vaje za otroka "+k.ime+" v aplikaciji Papiga. Odprite povezavo na telefonu: "+url;
+  if(navigator.share){try{await navigator.share({title:"Papiga – "+k.ime,text});return}catch(e){if(e&&e.name=="AbortError")return}}
+  try{await navigator.clipboard.writeText(text);toast2("Povezava je kopirana. Prilepite jo v sporočilo staršem.")}catch(e){toast2("Povezava: "+url)}}
+function prekiniPovezavo(){const k=kid();if(!k.koda||!confirm("Prekinem samodejno usklajevanje za otroka "+k.ime+"? Podatki v tej napravi ostanejo."))return;oblakOdjavi(k.koda);delete k.koda;shrani();render();toast2("Povezava je prekinjena.")}
+async function povezi(v){const koda=String(v||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(!okKoda(koda)){toast2("Koda ni pravilna. Ima 12 znakov, npr. ABCD-EFGH-JKLM.");return false}
+  let k=S.kids.find(x=>x.koda===koda);if(k){S.aktiven=k.id;shrani();render();toast2(k.ime+" je že povezan/-a.");return false}
+  toast2("Povezujem …");let r;try{const api=await fb();r=await cakaj(api.get(koda),20000)}catch(e){toast2("Povezava ni uspela. Preverite internet in poskusite znova.");return false}
+  let d;try{d=JSON.parse(r.json)}catch(e){}if(!d||!d.otrok||typeof d.otrok!="object"){toast2("Te kode ni. Preverite jo pri logopedu.");return false}
+  const samoDemo=S.kids.every(jeDemo),o=JSON.parse(JSON.stringify(d.otrok));delete o.vaja;oblakKnjiznica(d);fixKid(o);
+  k=S.kids.find(x=>x.uid===o.uid&&!x.koda);if(k)zdruziOtroka(k,o);else{k={...o,id:Math.max(0,...S.kids.map(x=>x.id))+1,vaja:null};S.kids.push(k);if(samoDemo&&!jeDemo(k)){S.kids=[k];S.vloga="otrok"}}
+  k.koda=koda;S.aktiven=k.id;cisti=true;oblakPrejmi(koda,r,false);shrani();render();oblakNaroci(koda);oblakPlan(300);toast2("Povezano: "+k.ime+". Vaje se odslej usklajujejo same.");return k}
+function poveziObrazec(e){e.preventDefault();povezi(e.target.koda.value);return false}
+const uraMin=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+function oblakStanje(k){const s=OB.stanje[k.koda],c=OB.cas[k.koda];return s=="ok"?"✅ Usklajeno"+(c?" ob "+uraMin(c):""):s=="brez"?"⚠️ Ni povezave. Uskladi se samo, ko bo internet.":"⏳ Usklajujem …"}
+function oblakHTML(jaz){const k=kid(),dat=`<details style="margin-top:14px"><summary class="mut" style="font-size:14px;cursor:pointer">Brez interneta: prenos z datoteko</summary>${prenosHTML()}</details>`;
+  if(k.koda)return `<div class="card"><h3 style="margin-top:0">☁️ Samodejno usklajevanje</h3><p style="margin-top:0"><b>${esc(k.ime)}</b> je povezan/-a. Vaje, urnik, sporočila, napredek in posnetki se usklajujejo sami.</p><p class="mut" role="status" style="font-size:14px">${oblakStanje(k)}<br>Koda: <b style="letter-spacing:1px;color:var(--ink)">${lepaKoda(k.koda)}</b></p><div class="row" style="gap:8px"><button class="btn" onclick="deliPovezavo()">📤 ${jaz=="logoped"?"Pošlji povezavo staršem":"Deli povezavo"}</button><button class="btn sec" onclick="prekiniPovezavo()">Prekini</button></div>${dat}</div>`;
+  if(jaz=="logoped")return `<div class="card"><h3 style="margin-top:0">☁️ Povezava s starši</h3><p class="mut" style="font-size:14px;margin-top:0">Ustvarite povezavo in jo pošljite staršem. Ko jo odprejo, se vaje, urnik, sporočila, napredek in posnetki za otroka <b>${esc(k.ime)}</b> usklajujejo sami.</p><p class="mut" style="font-size:13px">Kopija podatkov se shrani v oblaku (strežniki v EU). Za ime otroka lahko uporabite vzdevek ali začetnico.</p><button class="btn" onclick="ustvariPovezavo()">🔗 Ustvari povezavo za starše</button>${dat}</div>`;
+  return `<div class="card"><h3 style="margin-top:0">☁️ Povezava z logopedom</h3><p class="mut" style="font-size:14px;margin-top:0">Odprite povezavo, ki vam jo je poslal logoped, ali tukaj vpišite njegovo kodo. Vaje se nato usklajujejo same.</p><form onsubmit="return poveziObrazec(event)" class="row" style="gap:8px;align-items:flex-end"><div style="flex:1;min-width:170px"><label for="kodaVnos" style="margin-top:0">Koda logopeda</label><input id="kodaVnos" name="koda" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="ABCD-EFGH-JKLM" style="text-transform:uppercase"></div><button class="btn" type="submit">Poveži</button></form>${dat}</div>`}
+function oblakZagon(){let pk=null;try{pk=new URLSearchParams(location.search).get("koda")}catch(e){}
+  if(pk){try{history.replaceState(null,"",naslov())}catch(e){}povezi(pk)}
+  oblakPlan(200);addEventListener("online",()=>oblakPlan(200));document.addEventListener("visibilitychange",()=>{if(!document.hidden)oblakPlan(200)})}
 
 /* Igre */
 let IG=null;
@@ -281,7 +370,7 @@ function fixKid(k){if(!k.sklop||typeof k.sklop!="object")k.sklop={sklopi:[{glas:
   k.sporocila=k.sporocila.filter(x=>x&&typeof x.b=="string").map(x=>({id:String(x.id||rid()).slice(0,60),od:x.od=="logoped"?"logoped":"stars",t:+x.t||Date.now(),b:x.b.slice(0,1000)}));
   if(!Array.isArray(k.dnevi))k.dnevi=[];k.dnevi=k.dnevi.filter(d=>typeof d=="string"&&/^\d{4}-\d\d-\d\d$/.test(d));
   if(!k.stat||typeof k.stat!="object")k.stat={};for(const[x,v]of Object.entries(k.stat)){if(!Array.isArray(v)||!(+v[1]>0))delete k.stat[x];else k.stat[x]=[Math.max(0,Math.min(+v[0]||0,+v[1])),+v[1]]}
-  k.zvezde=Math.max(0,Math.round(+k.zvezde)||0);k.nalepke=Math.min(ST.length,Math.max(0,Math.round(+k.nalepke)||0));if(typeof k.nagradaDan!="string")k.nagradaDan=null;k.sklopT=+k.sklopT||0;k.urnikT=+k.urnikT||0}
+  k.zvezde=Math.max(0,Math.round(+k.zvezde)||0);k.nalepke=Math.min(ST.length,Math.max(0,Math.round(+k.nalepke)||0));if(typeof k.nagradaDan!="string")k.nagradaDan=null;k.sklopT=+k.sklopT||0;k.urnikT=+k.urnikT||0;if(!okKoda(k.koda))delete k.koda}
 S.kids.forEach(fixKid);
 const DNI_ICS=["MO","TU","WE","TH","FR","SA","SU"],dan=()=>(new Date().getDay()+6)%7;
 function setDan(i){const u=kid().urnik;u.dni[i]=u.dni[i]?0:1;if(!u.dni.some(Boolean)){u.dni[i]=1;toast2("Izberite vsaj en dan.");return}save();render()}
@@ -314,7 +403,7 @@ ${S.lastneP.length?`<h4 style="margin:14px 0 4px">Moje povedi in zgodbe (${S.las
 function setGlas(g){const k=kid(),a=k.sklop.sklopi,i=a.findIndex(x=>x.glas==g);if(i>=0){if(a.length<2){toast2("Otrok mora imeti vsaj en glas.");return}a.splice(i,1)}else a.push({glas:g,poz:Object.keys(W[g])[0]});fixSklop(k);save();render()}
 function setPoz(g,p){const k=kid(),x=k.sklop.sklopi.find(x=>x.glas==g);if(x)x.poz=p;fixSklop(k);save();render()}
 function setPon(v){const k=kid();k.sklop.pon=v;fixSklop(k);save();render()}
-function dodeli(){const k=kid();k.vaja={datum:danes(),i:0,rep:0,ok:0};save();render();const t=$("#toast");if(t)t.textContent="✔ Vaje so shranjene: "+k.ime+". Staršem jih pošljite z gumbom 📤."}
+function dodeli(){const k=kid();k.vaja={datum:danes(),i:0,rep:0,ok:0};save();render();const t=$("#toast");if(t)t.textContent=k.koda?"✔ Vaje so shranjene in poslane staršem: "+k.ime+".":"✔ Vaje so shranjene: "+k.ime+". Da jih dobijo starši, ustvarite povezavo (☁️)."}
 function mark(w,g,p){const l=w.toLowerCase(),G=g.toLowerCase();let i=p=="z"?0:p=="k"?l.lastIndexOf(G):l.indexOf(G,1);if(i<0)return esc(w);return esc(w.slice(0,i))+"<u>"+esc(w.slice(i,i+G.length))+"</u>"+esc(w.slice(i+G.length))}
 function toast2(m){const p=document.createElement("div");p.className="card";p.setAttribute("role","status");p.style.cssText="position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:30;max-width:340px;width:max-content";p.textContent=m;document.body.append(p);setTimeout(()=>p.remove(),2800)}
 
@@ -325,14 +414,14 @@ async function snemaj(w){
   try{const st=await navigator.mediaDevices.getUserMedia({audio:true});const r=new MediaRecorder(st),ch=[];
     r.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};
     r.onstop=async()=>{st.getTracks().forEach(t=>t.stop());mr=null;recW=null;
-      if(ch.length){try{await DB.put(w,new Blob(ch,{type:r.mimeType||"audio/webm"}));REC.add(w);toast2("Posnetek »"+w+"« je shranjen.")}catch(e){toast2("Posnetka ni bilo mogoče shraniti.")}}
+      if(ch.length){try{await DB.put(w,new Blob(ch,{type:r.mimeType||"audio/webm"}));REC.add(w);S.recT[w]=Date.now();save();toast2("Posnetek »"+w+"« je shranjen.")}catch(e){toast2("Posnetka ni bilo mogoče shraniti.")}}
       render()};
     r.start();mr=r;recW=w;render();setTimeout(()=>{if(mr===r)r.stop()},w.length>40?30000:w.length>14?9000:4000)
   }catch(e){toast2("Mikrofon ni dovoljen. Tapnite 📁 in besedo posnemite z aplikacijo telefona.")}}
 function naloziPosnetek(w){const i=document.createElement("input");i.type="file";i.accept="audio/*";i.setAttribute("capture","");
-  i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;try{await DB.put(w,f);REC.add(w);toast2("Posnetek »"+w+"« je shranjen.")}catch(e){toast2("Posnetka ni bilo mogoče shraniti.")}render()};i.click()}
+  i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;try{await DB.put(w,f);REC.add(w);S.recT[w]=Date.now();save();toast2("Posnetek »"+w+"« je shranjen.")}catch(e){toast2("Posnetka ni bilo mogoče shraniti.")}render()};i.click()}
 async function predvajaj(w){try{const b=await DB.get(w);if(!b)throw 0;const a=new Audio(URL.createObjectURL(b));a.onended=()=>URL.revokeObjectURL(a.src);await a.play()}catch(e){toast2("Posnetka ni mogoče predvajati – besedo preberite na glas.")}}
-async function izbrisi(w){try{await DB.del(w);REC.delete(w)}catch(e){}render()}
+async function izbrisi(w){try{await DB.del(w);REC.delete(w);S.recT[w]=Date.now();shrani()}catch(e){}render()}
 
 /* ---------- Pogledi ---------- */
 const TABS=[["logoped","🩺 Logoped"],["otrok","🧒 Otrok + starš"],["stars","👪 Starš"]];
@@ -350,12 +439,12 @@ function logoped(){const k=kid(),s=k.sklop,ws=kartice(k).map(x=>[x.w]);return `<
 <label>Urnik vaj (starš ga lahko prilagodi)</label>${urnikHTML(k,"l")}
 <label for="op">Opomba za starše</label><textarea id="op" rows="3" onchange="kid().sklop.opomba=this.value;zig(kid());save()">${esc(s.opomba)}</textarea>
 <p class="mut" style="font-size:14px">Besede: ${s.sklopi.map(x=>`<b>${x.glas}</b>: ${W[x.glas][x.poz].map(w=>mark(w[0],x.glas,x.poz)).join(", ")}`).join(" · ")}<br>Stopnja: ${STOP_OPIS[s.stopnja]} · ${ws.length*s.pon} kartic na dan</p>
-<div class="row" style="gap:8px"><button class="btn" onclick="dodeli()">Dodeli vaje</button><button class="btn sec" onclick="posljiPodatke()">📤 Pošlji staršem</button></div><p id="toast" class="mut" role="status" style="font-size:14px;margin:8px 0 0"></p></div>
+<div class="row" style="gap:8px"><button class="btn" onclick="dodeli()">Dodeli vaje</button>${k.koda?"":`<button class="btn sec" onclick="ustvariPovezavo()">🔗 Poveži s starši</button>`}</div><p id="toast" class="mut" role="status" style="font-size:14px;margin:8px 0 0"></p></div>
 <div class="card"><h3 style="margin-top:0">🎙️ Posnetki besed</h3><p class="mut" style="font-size:14px;margin-top:0">Posnemite pravilno izgovorjavo. Otrok bo slišal vaš glas. Seznam velja za izbrano stopnjo. Snemanje se ustavi samo (besede po 4 s, povedi po 9 s, zgodbe po 30 s). Če mikrofon ni dovoljen (npr. na telefonu), tapnite 📁 in posnemite z aplikacijo telefona.</p>
 ${[...new Set(ws.map(x=>x[0]))].map(w=>`<div class="recrow"><b style="${w.length>14?"font-size:14px;font-weight:600":""}">${esc(w.length>60?w.slice(0,58)+"…":w)}</b>${REC.has(w)?`<button class="btn sec sm" data-w="${esc(w)}" onclick="predvajaj(this.dataset.w)" aria-label="Predvajaj ${esc(w)}">▶</button>`:""}<button class="btn sm ${recW==w?"rec":"sec"}" data-w="${esc(w)}" onclick="snemaj(this.dataset.w)" ${mr&&recW!=w?"disabled":""}>${recW==w?"⏹ Ustavi":REC.has(w)?"● Znova":"● Posnemi"}</button><button class="btn sec sm" data-w="${esc(w)}" onclick="naloziPosnetek(this.dataset.w)" aria-label="Posnemi ali izberi posnetek v telefonu za ${esc(w)}" title="Posnemi z aplikacijo telefona ali izberi datoteko">📁</button>${REC.has(w)&&recW!=w?`<button class="btn sec sm" data-w="${esc(w)}" onclick="izbrisi(this.dataset.w)" aria-label="Izbriši posnetek ${esc(w)}">🗑</button>`:""}</div>`).join("")}</div>${knjiznica()}</div>
 <div><div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">${k.av} ${esc(k.ime)} – napredek ta teden</h2><button class="btn sec sm" onclick="odstrani()">🗑 Odstrani otroka</button></div><div class="row"><div class="stat"><small>Dni vadbe (urnik)</small><b>${dniTeden(k)} / ${planDni(k)}</b></div><div class="stat"><small>Niz dni</small><b>🔥 ${niz(k)}</b></div><div class="stat"><small>Zvezdice</small><b>⭐ ${k.zvezde}</b></div><div class="stat"><small>Trenutni sklop</small><b style="font-size:17px">${opis(k)}</b></div></div>
 <h3>Dnevi vadbe</h3>${dayStrip(k)}
-<h3>Delež potrjeno pravilnih (po oceni staršev)</h3>${chart(k)}<h3>💬 Sporočila s starši</h3>${klepet(k,"logoped")}</div>${prenosHTML()}</div></div>`}
+<h3>Delež potrjeno pravilnih (po oceni staršev)</h3>${chart(k)}<h3>💬 Sporočila s starši</h3>${klepet(k,"logoped")}</div>${oblakHTML("logoped")}</div></div>`}
 
 function otrok(){const k=kid(),s=k.sklop,ws=words(),v=vaja(k),tot=ws.length*s.pon;
 const izbira=`<select aria-label="Izberi otroka" style="width:auto;padding:6px 8px" onchange="S.aktiven=+this.value;save();render()">${S.kids.map(x=>`<option value="${x.id}" ${x.id==k.id?"selected":""}>${x.av} ${esc(x.ime)}</option>`).join("")}</select>`;
@@ -409,16 +498,16 @@ ${opomnik(k)}<div class="card"><h2 style="margin-top:0">Tedenski povzetek – ${
 <div class="card"><h3 style="margin-top:0">📅 Urnik in opomnik</h3><p class="mut" style="font-size:14px;margin-top:0">Urnik je predlagal logoped. Prilagodite ga lahko, kakor vam ustreza.</p>${urnikHTML(k,"s")}
 <p style="margin:14px 0 6px"><b>Opomnik na telefonu</b></p><p class="mut" style="font-size:14px;margin:0 0 10px">Vaje dodajte v koledar, ki vas bo ob uri vaj opomnil na vsak dan z urnika. Če urnik spremenite, staro ponovitev v koledarju izbrišite in jo dodajte znova.</p>
 <div class="row" style="gap:8px"><a class="btn" style="text-decoration:none" href="${googleKoledar(k)}" target="_blank" rel="noopener">📅 Dodaj v Google Koledar</a><button class="btn sec" onclick="icsDatoteka()">⬇ Datoteka za drug koledar</button></div></div>
-<div class="card"><h3 style="margin-top:0">💬 Sporočila z logopedom</h3>${klepet(k,"stars")}</div>${prenosHTML()}</div>`}
+<div class="card"><h3 style="margin-top:0">💬 Sporočila z logopedom</h3>${klepet(k,"stars")}</div>${oblakHTML("stars")}</div>`}
 
-const OSNUTKI=["msg-logoped","msg-stars","bw","bg","be","pg","px","nIme","nSt"];let rDela=false,rSe=false;
+const OSNUTKI=["kodaVnos","msg-logoped","msg-stars","bw","bg","be","pg","px","nIme","nSt"];let rDela=false,rSe=false;
 function render(){if(rDela){rSe=true;return}rDela=true;try{const app=$("#app"),os={},f=document.activeElement&&app.contains(document.activeElement)?document.activeElement.id:"";OSNUTKI.forEach(id=>{const e=document.getElementById(id);if(e)os[id]=e.value});
   tabs();app.innerHTML=S.vloga=="logoped"?logoped():S.vloga=="otrok"?otrok():stars();
   if(cisti)cisti=false;else for(const id in os){const e=document.getElementById(id);if(e)e.value=os[id]}
   if(f){const e=document.getElementById(f);if(e)try{e.focus({preventScroll:true})}catch(x){}}}finally{rDela=false}if(rSe){rSe=false;render()}}
 let cisti=false;
 render();
-DB.keys().then(ks=>{REC=new Set(ks||[]);render()}).catch(()=>{});
+DB.keys().then(ks=>{REC=new Set(ks||[]);render()}).catch(()=>{}).then(oblakZagon);
 
 /* ---------- Aplikacija (PWA) ---------- */
 if("serviceWorker"in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
