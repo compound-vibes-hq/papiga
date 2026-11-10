@@ -1,20 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" rx="112" fill="#ffb86b"/>
-<defs><clipPath id="c"><rect width="512" height="512" rx="112"/></clipPath></defs><g clip-path="url(#c)"><g transform="translate(256 262) scale(.92) translate(-256 -256)">
- <!-- čop -->
- <path d="M196 120 C170 60 205 30 232 44 C222 70 232 96 246 116 Z" fill="#e63946"/>
- <path d="M236 108 C226 44 268 22 292 42 C276 64 276 92 284 112 Z" fill="#ff8a5b"/>
- <path d="M276 112 C282 62 322 52 340 74 C320 88 312 108 312 126 Z" fill="#ffd166"/>
- <!-- telo in glava -->
- <path d="M96 800 L96 512 C80 400 96 300 130 240 C150 150 220 96 290 104 C360 112 400 170 396 236 C392 300 372 330 368 380 C364 430 380 470 392 512 L392 800 Z" fill="#2a9d8f"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+ <clipPath id="c"><rect width="512" height="512" rx="112"/></clipPath>
+ <radialGradient id="bg" cx=".35" cy=".25" r="1"><stop offset="0" stop-color="#7fd6c2"/><stop offset=".55" stop-color="#2a9d8f"/><stop offset="1" stop-color="#176a61"/></radialGradient>
+ <linearGradient id="rd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6a4d"/><stop offset=".5" stop-color="#e5352b"/><stop offset="1" stop-color="#b71f22"/></linearGradient>
+ <linearGradient id="rd2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d42c27"/><stop offset="1" stop-color="#a81a20"/></linearGradient>
+ <linearGradient id="yl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe066"/><stop offset="1" stop-color="#f5a623"/></linearGradient>
+ <linearGradient id="bl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fa0f0"/><stop offset="1" stop-color="#1a4fa8"/></linearGradient>
+ <linearGradient id="bk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#e3c58e"/></linearGradient>
+ <linearGradient id="br" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a6b3f"/><stop offset="1" stop-color="#5f3d22"/></linearGradient>
+</defs>
+<g clip-path="url(#c)"><rect width="512" height="512" fill="url(#bg)"/>
+ <!-- listje v ozadju -->
+ <g opacity=".22" fill="#0e4f48"><path d="M-20 120 C60 60 150 70 190 130 C120 150 50 160 -20 120Z"/><path d="M540 300 C460 250 400 270 370 330 C430 350 490 345 540 300Z"/><path d="M420 -10 C400 50 430 100 490 110 C500 60 480 20 420 -10Z"/></g>
+ <g opacity=".18" fill="#c9f5e7"><path d="M30 470 C70 400 130 390 170 430 C130 470 80 490 30 470Z"/><path d="M400 520 C410 460 450 430 500 440 C490 490 450 520 400 520Z"/></g>
+<g transform="translate(256 256) scale(.98) translate(-262 -292)">
+ <!-- rep -->
+ <path d="M238 372 C222 430 200 480 150 660 L190 660 C236 486 262 432 280 384 Z" fill="url(#bl)"/>
+ <path d="M214 360 C188 420 156 476 70 660 L120 660 C198 480 234 424 262 378 Z" fill="url(#rd2)"/>
+ <path d="M226 368 C204 424 178 480 100 660" fill="none" stroke="#7d1218" stroke-width="3" opacity=".5"/>
+ <!-- veja -->
+ <path d="M40 412 C150 392 330 404 484 382" fill="none" stroke="url(#br)" stroke-width="24" stroke-linecap="round"/>
+ <path d="M60 404 C160 388 320 398 470 378" fill="none" stroke="#c49a6c" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+ <path d="M430 384 C440 350 470 336 498 344 C490 372 462 388 430 384Z" fill="#8fdc7a"/><path d="M432 383 C452 366 474 354 496 346" stroke="#3f9b4a" stroke-width="3" fill="none"/>
+ <!-- telo -->
+ <path d="M250 168 C304 166 348 214 348 286 C348 344 316 390 270 396 C224 400 190 362 186 300 C183 244 204 188 250 168 Z" fill="url(#rd)"/>
+ <path d="M300 236 C330 270 334 330 300 380 C330 356 346 322 346 286 C346 262 340 244 330 228 Z" fill="#8f161c" opacity=".35"/>
  <!-- krilo -->
- <path d="M120 800 L120 512 C112 430 140 360 200 340 C250 330 290 372 286 430 C283 470 270 495 262 512 L262 800 Z" fill="#1f7f74"/>
- <path d="M160 800 L160 512 C160 462 180 420 214 404" fill="none" stroke="#2a9d8f" stroke-width="12" stroke-linecap="round"/>
- <!-- obraz -->
- <ellipse cx="300" cy="212" rx="70" ry="64" fill="#fff8ef"/>
- <circle cx="304" cy="210" r="26" fill="#2d2a32"/><circle cx="313" cy="201" r="9" fill="#fff"/>
- <circle cx="262" cy="262" r="20" fill="#ff8a5b" opacity=".85"/>
+ <path d="M236 188 C202 214 182 264 186 322 C190 374 206 414 224 446 C252 404 274 342 272 282 C270 236 258 204 236 188 Z" fill="url(#rd2)"/>
+ <path d="M188 286 C210 300 244 304 272 290 C272 320 264 346 254 370 C230 376 204 364 189 344 C187 324 187 304 188 286Z" fill="url(#yl)"/>
+ <path d="M189 344 C204 364 230 376 254 370 C246 398 236 424 224 446 C206 416 194 382 189 344Z" fill="url(#bl)"/>
+ <g fill="none" stroke-linecap="round" stroke-width="3"><path d="M204 304 C206 326 212 346 222 362" stroke="#d98a12" opacity=".7"/><path d="M228 308 C230 330 236 350 244 366" stroke="#d98a12" opacity=".7"/><path d="M252 302 C254 322 256 342 256 360" stroke="#d98a12" opacity=".7"/>
+  <path d="M206 368 C210 392 216 414 224 434" stroke="#123a80" opacity=".7"/><path d="M228 376 C230 396 230 414 228 430" stroke="#123a80" opacity=".7"/>
+  <path d="M206 232 C214 244 228 252 244 254" stroke="#7d1218" opacity=".5"/><path d="M196 262 C210 274 232 280 256 276" stroke="#7d1218" opacity=".5"/></g>
+ <!-- kremplji -->
+ <g fill="#4a444f"><ellipse cx="286" cy="400" rx="17" ry="10"/><ellipse cx="316" cy="396" rx="15" ry="9"/></g>
+ <g stroke="#2d2a32" stroke-width="2.5" opacity=".6"><path d="M280 392 v16"/><path d="M290 391 v17"/><path d="M312 388 v15"/><path d="M321 388 v15"/></g>
+ <!-- glava -->
+ <circle cx="292" cy="140" r="66" fill="url(#rd)"/>
+ <path d="M240 106 C262 78 304 70 336 90" fill="none" stroke="#ff9a7d" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+ <ellipse cx="320" cy="142" rx="37" ry="33" fill="#fff6ea"/>
+ <g stroke="#e9b9a8" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"><path d="M298 156 C308 162 322 164 336 160"/><path d="M302 166 C312 170 322 171 332 168"/></g>
+ <circle cx="314" cy="132" r="13" fill="#ffe08a"/><circle cx="315" cy="132" r="7.5" fill="#1d1b20"/><circle cx="318" cy="129" r="2.6" fill="#fff"/>
  <!-- kljun -->
- <path d="M352 178 C420 160 474 214 452 286 C444 314 424 334 404 340 C416 300 400 270 356 262 Z" fill="#ffd166"/>
- <path d="M352 178 C420 160 474 214 452 286 C440 240 404 216 356 222 Z" fill="#ffc233"/>
- <path d="M350 270 C382 272 402 292 398 326 C376 334 352 318 344 292 Z" fill="#3a3340"/>
+ <path d="M344 168 C364 172 378 188 374 216 C356 218 342 204 337 186 Z" fill="#2b272e"/>
+ <path d="M338 98 C382 90 422 128 406 178 C400 198 386 212 374 216 C380 192 372 174 344 168 C354 146 352 120 338 98 Z" fill="url(#bk)"/>
+ <path d="M346 104 C378 102 402 128 400 160" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+ <circle cx="352" cy="124" r="3.5" fill="#b9975e"/>
 </g></g></svg>
