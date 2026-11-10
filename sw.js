@@ -1,5 +1,5 @@
 // Delovanje brez interneta. Ob novi različici povečaj številko v imenu predpomnilnika.
-const CACHE = "zvezek-v10";
+const CACHE = "zvezek-v11";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -14,11 +14,11 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Najprej splet (da dobiš novo različico), ob neuspehu shranjena kopija.
+// Najprej splet, mimo predpomnilnika brskalnika (da nova različica pride takoj), ob neuspehu shranjena kopija.
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, { cache: "no-cache" })
       .then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return r; })
       .catch(() => caches.match(e.request).then(r => r || caches.match("./index.html")))
   );

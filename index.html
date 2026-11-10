@@ -330,10 +330,43 @@ async function povezi(v){const koda=String(v||"").toUpperCase().replace(/[^A-Z0-
   k=S.kids.find(x=>x.uid===o.uid&&!x.koda);if(k)zdruziOtroka(k,o);else{k={...o,id:Math.max(0,...S.kids.map(x=>x.id))+1,vaja:null};S.kids.push(k);if(samoDemo&&!jeDemo(k)){S.kids=[k];S.vloga="otrok"}}
   k.koda=koda;S.aktiven=k.id;cisti=true;oblakPrejmi(koda,r,false);shrani();render();oblakNaroci(koda);oblakPlan(300);toast2("Povezano: "+k.ime+". Vaje se odslej usklajujejo same.");return k}
 function poveziObrazec(e){e.preventDefault();povezi(e.target.koda.value);return false}
+/* QR koda povezave (različice 1–6, stopnja popravljanja M, bajtni način). Vrne matriko 0/1 ali null, če je besedilo predolgo. */
+function qrMatrika(txt){const d=[...new TextEncoder().encode(txt)],RAW=[0,26,44,70,100,134,172],ECB=[0,10,16,26,18,24,16],NB=[0,1,1,1,2,2,4];
+  let v=1;while(v<=6&&d.length+2>RAW[v]-ECB[v]*NB[v])v++;if(v>6)return null;
+  const cap=RAW[v]-ECB[v]*NB[v],bits=[],push=(val,n)=>{for(let i=n-1;i>=0;i--)bits.push(val>>>i&1)};
+  push(4,4);push(d.length,8);d.forEach(b=>push(b,8));push(0,Math.min(4,cap*8-bits.length));while(bits.length%8)bits.push(0);
+  const cw=[];for(let i=0;i<bits.length;i+=8)cw.push(parseInt(bits.slice(i,i+8).join(""),2));for(let x=0xEC;cw.length<cap;x^=0xFD)cw.push(x);
+  const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z},deg=ECB[v],gen=Array(deg).fill(0);gen[deg-1]=1;
+  for(let i=0,root=1;i<deg;i++){for(let j=0;j<deg;j++){gen[j]=mul(gen[j],root);if(j+1<deg)gen[j]^=gen[j+1]}root=mul(root,2)}
+  const rs=dat=>{const r=Array(deg).fill(0);for(const b of dat){const f=b^r.shift();r.push(0);gen.forEach((g,i)=>r[i]^=mul(g,f))}return r};
+  const nb=NB[v],bl=cap/nb,blk=[];for(let i=0;i<nb;i++){const dat=cw.slice(i*bl,(i+1)*bl);blk.push([dat,rs(dat)])}
+  const all=[];for(let i=0;i<bl;i++)blk.forEach(b=>all.push(b[0][i]));for(let i=0;i<deg;i++)blk.forEach(b=>all.push(b[1][i]));
+  const n=v*4+17,M=Array.from({length:n},()=>Array(n).fill(0)),F=Array.from({length:n},()=>Array(n).fill(false)),set=(x,y,val)=>{M[y][x]=val?1:0;F[y][x]=true};
+  for(let i=0;i<n;i++){set(6,i,i%2==0);set(i,6,i%2==0)}
+  [[3,3],[n-4,3],[3,n-4]].forEach(([cx,cy])=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const x=cx+dx,y=cy+dy;if(x<0||y<0||x>=n||y>=n)continue;const r=Math.max(Math.abs(dx),Math.abs(dy));set(x,y,r!=2&&r!=4)}});
+  if(v>1){const c=n-7;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(c+dx,c+dy,Math.max(Math.abs(dx),Math.abs(dy))!=1)}
+  const format=m=>{let rem=m;for(let i=0;i<10;i++)rem=(rem<<1)^((rem>>>9)*0x537);const b=(m<<10|rem)^0x5412,g=i=>b>>>i&1;
+    for(let i=0;i<=5;i++)set(8,i,g(i));set(8,7,g(6));set(8,8,g(7));set(7,8,g(8));for(let i=9;i<15;i++)set(14-i,8,g(i));
+    for(let i=0;i<8;i++)set(n-1-i,8,g(i));for(let i=8;i<15;i++)set(8,n-15+i,g(i));set(8,n-8,1)};
+  format(0);
+  for(let right=n-1,i=0;right>=1;right-=2){if(right==6)right=5;for(let vert=0;vert<n;vert++)for(let j=0;j<2;j++){const x=right-j,y=((right+1)&2)==0?n-1-vert:vert;if(!F[y][x]&&i<all.length*8){M[y][x]=all[i>>>3]>>>(7-(i&7))&1;i++}}}
+  const MF=[(x,y)=>(x+y)%2==0,(x,y)=>y%2==0,(x,y)=>x%3==0,(x,y)=>(x+y)%3==0,(x,y)=>((x/3|0)+(y/2|0))%2==0,(x,y)=>x*y%2+x*y%3==0,(x,y)=>(x*y%2+x*y%3)%2==0,(x,y)=>((x+y)%2+x*y%3)%2==0];
+  const maska=m=>{for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(!F[y][x]&&MF[m](x,y))M[y][x]^=1};
+  const kazen=()=>{let p=0,crni=0;for(let y=0;y<n;y++){let rx=1,ry=1;for(let x=0;x<n;x++){crni+=M[y][x];
+        if(x){if(M[y][x]==M[y][x-1]){rx++;if(rx==5)p+=3;else if(rx>5)p++}else rx=1;if(M[x][y]==M[x-1][y]){ry++;if(ry==5)p+=3;else if(ry>5)p++}else ry=1}
+        if(x&&y&&M[y][x]==M[y-1][x]&&M[y][x]==M[y][x-1]&&M[y][x]==M[y-1][x-1])p+=3}}
+    return p+Math.floor(Math.abs(crni*20-n*n*10)/(n*n))*10};
+  let naj=0,najP=Infinity;for(let m=0;m<8;m++){maska(m);format(m);const k=kazen();if(k<najP){najP=k;naj=m}maska(m)}
+  maska(naj);format(naj);return M}
+const QRC={};
+function qrSVG(txt){if(QRC[txt]!==undefined)return QRC[txt];const M=qrMatrika(txt);if(!M)return QRC[txt]="";const n=M.length,q=4;let d="";
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(M[y][x])d+="M"+(x+q)+" "+(y+q)+"h1v1h-1z";
+  return QRC[txt]=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+2*q} ${n+2*q}" width="190" height="190" role="img" aria-label="QR koda povezave" shape-rendering="crispEdges" style="background:#fff;border-radius:10px;display:block"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`}
+function qrHTML(k,jaz){const s=qrSVG(naslov()+"?koda="+k.koda);if(!s)return "";return `<div class="row" style="gap:14px;align-items:center;margin-top:12px">${s}<p class="mut" style="flex:1;min-width:150px;font-size:14px;margin:0"><b style="color:var(--ink)">${jaz=="logoped"?"Starš je pri vas?":"Druga naprava?"}</b><br>Kodo naj poslika s kamero telefona in tapne povezavo, ki se pokaže. Tipkati ni treba nič.</p></div>`}
 const uraMin=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
 function oblakStanje(k){const s=OB.stanje[k.koda],c=OB.cas[k.koda];return s=="ok"?"✅ Usklajeno"+(c?" ob "+uraMin(c):""):s=="brez"?"⚠️ Ni povezave. Uskladi se samo, ko bo internet.":"⏳ Usklajujem …"}
 function oblakHTML(jaz){const k=kid(),dat=`<details style="margin-top:14px"><summary class="mut" style="font-size:14px;cursor:pointer">Brez interneta: prenos z datoteko</summary>${prenosHTML()}</details>`;
-  if(k.koda)return `<div class="card"><h3 style="margin-top:0">☁️ Samodejno usklajevanje</h3><p style="margin-top:0"><b>${esc(k.ime)}</b> je povezan/-a. Vaje, urnik, sporočila, napredek in posnetki se usklajujejo sami.</p><p class="mut" role="status" style="font-size:14px">${oblakStanje(k)}<br>Koda: <b style="letter-spacing:1px;color:var(--ink)">${lepaKoda(k.koda)}</b></p><label for="povUrl">Povezava za ${jaz=="logoped"?"starše":"drugo napravo"}</label><div class="row" style="gap:8px"><input id="povUrl" readonly value="${esc(naslov()+"?koda="+k.koda)}" onclick="this.select()" style="flex:1;min-width:160px;font-size:14px"><button class="btn sec" onclick="kopirajPovezavo()">📋 Kopiraj</button></div><div class="row" style="gap:8px;margin-top:10px">${navigator.share?`<button class="btn" onclick="deliPovezavo()">📤 ${jaz=="logoped"?"Pošlji povezavo staršem":"Deli povezavo"}</button>`:""}<button class="btn sec" onclick="prekiniPovezavo()">Prekini</button></div>${dat}</div>`;
+  if(k.koda)return `<div class="card"><h3 style="margin-top:0">☁️ Samodejno usklajevanje</h3><p style="margin-top:0"><b>${esc(k.ime)}</b> je povezan/-a. Vaje, urnik, sporočila, napredek in posnetki se usklajujejo sami.</p><p class="mut" role="status" style="font-size:14px">${oblakStanje(k)}<br>Koda: <b style="letter-spacing:1px;color:var(--ink)">${lepaKoda(k.koda)}</b></p><label for="povUrl">Povezava za ${jaz=="logoped"?"starše":"drugo napravo"}</label><div class="row" style="gap:8px"><input id="povUrl" readonly value="${esc(naslov()+"?koda="+k.koda)}" onclick="this.select()" style="flex:1;min-width:160px;font-size:14px"><button class="btn sec" onclick="kopirajPovezavo()">📋 Kopiraj</button></div><div class="row" style="gap:8px;margin-top:10px">${navigator.share?`<button class="btn" onclick="deliPovezavo()">📤 ${jaz=="logoped"?"Pošlji povezavo staršem":"Deli povezavo"}</button>`:""}<button class="btn sec" onclick="prekiniPovezavo()">Prekini</button></div>${qrHTML(k,jaz)}${dat}</div>`;
   if(jaz=="logoped")return `<div class="card"><h3 style="margin-top:0">☁️ Povezava s starši</h3><p class="mut" style="font-size:14px;margin-top:0">Ustvarite povezavo in jo pošljite staršem. Ko jo odprejo, se vaje, urnik, sporočila, napredek in posnetki za otroka <b>${esc(k.ime)}</b> usklajujejo sami.</p><p class="mut" style="font-size:13px">Kopija podatkov se shrani v oblaku (strežniki v EU). Za ime otroka lahko uporabite vzdevek ali začetnico.</p><button class="btn" onclick="ustvariPovezavo()">🔗 Ustvari povezavo za starše</button>${dat}</div>`;
   return `<div class="card"><h3 style="margin-top:0">☁️ Povezava z logopedom</h3><p class="mut" style="font-size:14px;margin-top:0">Odprite povezavo, ki vam jo je poslal logoped, ali tukaj vpišite njegovo kodo. Vaje se nato usklajujejo same.</p><form onsubmit="return poveziObrazec(event)" class="row" style="gap:8px;align-items:flex-end"><div style="flex:1;min-width:170px"><label for="kodaVnos" style="margin-top:0">Koda logopeda</label><input id="kodaVnos" name="koda" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="ABCD-EFGH-JKLM" style="text-transform:uppercase"></div><button class="btn" type="submit">Poveži</button></form>${dat}</div>`}
 function oblakZagon(){let pk=null;try{pk=new URLSearchParams(location.search).get("koda")}catch(e){}
