@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="sl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Moj zvezek vaj</title>
+<title>Papiga – domače logopedske vaje</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#ff8a5b">
 <link rel="icon" href="icon-192.png">
@@ -79,7 +79,7 @@ footer{text-align:center;font-size:13px;color:var(--mut);padding:18px}
 .igmsg{font-size:20px;text-align:center;min-height:28px}
 :focus-visible{outline:3px solid #1d4ed8;outline-offset:2px}
 </style></head><body>
-<header><h1>📒 Moj <span>zvezek</span> vaj</h1><button class="btn sm" id="namesti" hidden>📲 Namesti aplikacijo</button><nav role="tablist" id="tabs"></nav></header>
+<header><h1>🦜 <span>Papiga</span></h1><button class="btn sm" id="namesti" hidden>📲 Namesti aplikacijo</button><nav role="tablist" id="tabs"></nav></header>
 <main id="app"></main>
 <div class="cele" id="cele" role="dialog" aria-modal="true" aria-labelledby="celeT"></div>
 <div class="ris" id="ris" role="dialog" aria-modal="true" onclick="zapriRis()"></div>
@@ -228,10 +228,10 @@ const b64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r
 async function izvoz(){const k=kid(),bes=new Set(besede(k).map(x=>x.w));["poved","zgodba"].forEach(st=>kartice({...k,sklop:{...k.sklop,stopnja:st}}).forEach(x=>bes.add(x.w)));
   const posnetki={};for(const w of bes){if(REC.has(w)){try{const bl=await DB.get(w);if(bl)posnetki[w]=await b64(bl)}catch(e){}}}
   const {vaja,...otrok}=k;return {tip:"zvezek-prenos",v:1,od:S.vloga,t:Date.now(),otrok,lastne:S.lastne,lastneP:S.lastneP,posnetki}}
-async function posljiPodatke(){try{const k=kid(),d=await izvoz(),ime="zvezek-"+k.ime.toLowerCase().replace(/[^a-zčšž0-9]+/g,"-")+"-"+danes()+".txt",f=new File([JSON.stringify(d)],ime,{type:"text/plain"});
-  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:"Zvezek vaj – "+k.ime,text:"Podatki za Zvezek vaj. Odprite aplikacijo ("+naslov()+") in tapnite 📥 Prejmi."});return}catch(e){if(e&&e.name=="AbortError")return}}
+async function posljiPodatke(){try{const k=kid(),d=await izvoz(),ime="papiga-"+k.ime.toLowerCase().replace(/[^a-zčšž0-9]+/g,"-")+"-"+danes()+".txt",f=new File([JSON.stringify(d)],ime,{type:"text/plain"});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:"Papiga – "+k.ime,text:"Podatki za aplikacijo Papiga. Odprite aplikacijo ("+naslov()+") in tapnite 📥 Prejmi."});return}catch(e){if(e&&e.name=="AbortError")return}}
   const a=document.createElement("a");a.href=URL.createObjectURL(f);a.download=ime;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast2("Datoteka je shranjena med prenose. Pošljite jo drugi osebi.")}catch(e){toast2("Datoteke ni bilo mogoče pripraviti.")}}
-function prejmi(){const i=document.createElement("input");i.type="file";i.accept=".txt,.json,text/plain,application/json";i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;let d;try{d=JSON.parse(await f.text());if(d.tip!=="zvezek-prenos"||!d.otrok||typeof d.otrok!="object")throw 0}catch(e){toast2("To ni datoteka Zvezka vaj ali je poškodovana.");return}await uvozi(d)};i.click()}
+function prejmi(){const i=document.createElement("input");i.type="file";i.accept=".txt,.json,text/plain,application/json";i.onchange=async()=>{const f=i.files&&i.files[0];if(!f)return;let d;try{d=JSON.parse(await f.text());if(d.tip!=="zvezek-prenos"||!d.otrok||typeof d.otrok!="object")throw 0}catch(e){toast2("To ni datoteka aplikacije Papiga ali je poškodovana.");return}await uvozi(d)};i.click()}
 async function uvozi(d){
   const kl=x=>x.w+"|"+x.glas+"|"+x.poz,ob=new Set(S.lastne.map(kl));(Array.isArray(d.lastne)?d.lastne:[]).forEach(x=>{if(x&&okBes(x.w)&&okGlas(x.glas)&&POS[x.poz]&&!ob.has(kl(x))){S.lastne.push({w:x.w,glas:x.glas,poz:x.poz,e:cE(x.e)});ob.add(kl(x))}});
   const kp=x=>x.t+"|"+x.glas,obp=new Set(S.lastneP.map(kp));(Array.isArray(d.lastneP)?d.lastneP:[]).forEach(x=>{if(x&&typeof x.t=="string"&&x.t.length>=3&&okGlas(x.glas)&&!obp.has(kp(x))){S.lastneP.push({t:x.t.slice(0,600),glas:x.glas,tip:x.tip=="zgodba"?"zgodba":"poved"});obp.add(kp(x))}});
@@ -297,9 +297,9 @@ function prviTermin(u){const d=dan(),[h,m]=u.ura.split(":").map(Number),off=[0,1
 const fmt=x=>x.getFullYear()+String(x.getMonth()+1).padStart(2,"0")+String(x.getDate()).padStart(2,"0")+"T"+String(x.getHours()).padStart(2,"0")+String(x.getMinutes()).padStart(2,"0")+"00";
 const naslov=()=>location.href.split(/[?#]/)[0];
 function googleKoledar(k){const u=k.urnik,st=prviTermin(u),en=new Date(st.getTime()+10*60000),by=u.dni.map((v,i)=>v?DNI_ICS[i]:null).filter(Boolean).join(",");
-  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent("Logopedske vaje – "+k.ime)+"&dates="+fmt(st)+"/"+fmt(en)+"&ctz=Europe/Ljubljana&recur="+encodeURIComponent("RRULE:FREQ=WEEKLY;BYDAY="+by)+"&details="+encodeURIComponent("Odpri Moj zvezek vaj: "+naslov())}
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent("Logopedske vaje – "+k.ime)+"&dates="+fmt(st)+"/"+fmt(en)+"&ctz=Europe/Ljubljana&recur="+encodeURIComponent("RRULE:FREQ=WEEKLY;BYDAY="+by)+"&details="+encodeURIComponent("Odpri aplikacijo Papiga: "+naslov())}
 function icsDatoteka(){const k=kid(),u=k.urnik,st=prviTermin(u),by=u.dni.map((v,i)=>v?DNI_ICS[i]:null).filter(Boolean).join(",");
-  const t=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Moj zvezek vaj//SL","BEGIN:VEVENT","UID:vaje-"+k.id+"-"+Date.now()+"@zvezek","DTSTAMP:"+fmt(new Date()),"DTSTART:"+fmt(st),"DURATION:PT10M","RRULE:FREQ=WEEKLY;BYDAY="+by,"SUMMARY:Logopedske vaje – "+k.ime,"DESCRIPTION:Odpri Moj zvezek vaj: "+naslov(),"BEGIN:VALARM","ACTION:DISPLAY","TRIGGER:PT0M","DESCRIPTION:Čas je za vaje","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const t=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Papiga//SL","BEGIN:VEVENT","UID:vaje-"+k.id+"-"+Date.now()+"@zvezek","DTSTAMP:"+fmt(new Date()),"DTSTART:"+fmt(st),"DURATION:PT10M","RRULE:FREQ=WEEKLY;BYDAY="+by,"SUMMARY:Logopedske vaje – "+k.ime,"DESCRIPTION:Odpri aplikacijo Papiga: "+naslov(),"BEGIN:VALARM","ACTION:DISPLAY","TRIGGER:PT0M","DESCRIPTION:Čas je za vaje","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/calendar"}));a.download="vaje-"+k.ime.toLowerCase().replace(/[^a-zčšž0-9]+/g,"-")+".ics";document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
 function knjiznica(){return `<div class="card"><h3 style="margin-top:0">📚 Knjižnica besed</h3><p class="mut" style="font-size:14px;margin-top:0">Dodajte svoje besede, tudi za nove glasove (npr. K, G, LJ). Na voljo so vsem otrokom. Posnetek besede se samodejno uporabi pri vseh otrocih, ki jo vadijo.</p>
 <form onsubmit="return dodajBesedo(event)"><label for="bw">Beseda</label><input id="bw" name="bw" maxlength="20" autocomplete="off" placeholder="npr. kapa">

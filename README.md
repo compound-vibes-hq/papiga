@@ -1,4 +1,4 @@
-# Moj zvezek vaj
+# Papiga
 
 Prototip aplikacije za domače logopedske vaje (logoped, otrok in starš).
 Ni medicinski pripomoček. Vsi podatki v kodi so izmišljeni.
