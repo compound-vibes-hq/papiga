@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" rx="112" fill="#ffb86b"/>
+<defs><clipPath id="c"><rect width="512" height="512" rx="112"/></clipPath></defs><g clip-path="url(#c)"><g transform="translate(256 262) scale(.92) translate(-256 -256)">
+ <!-- čop -->
+ <path d="M196 120 C170 60 205 30 232 44 C222 70 232 96 246 116 Z" fill="#e63946"/>
+ <path d="M236 108 C226 44 268 22 292 42 C276 64 276 92 284 112 Z" fill="#ff8a5b"/>
+ <path d="M276 112 C282 62 322 52 340 74 C320 88 312 108 312 126 Z" fill="#ffd166"/>
+ <!-- telo in glava -->
+ <path d="M96 800 L96 512 C80 400 96 300 130 240 C150 150 220 96 290 104 C360 112 400 170 396 236 C392 300 372 330 368 380 C364 430 380 470 392 512 L392 800 Z" fill="#2a9d8f"/>
+ <!-- krilo -->
+ <path d="M120 800 L120 512 C112 430 140 360 200 340 C250 330 290 372 286 430 C283 470 270 495 262 512 L262 800 Z" fill="#1f7f74"/>
+ <path d="M160 800 L160 512 C160 462 180 420 214 404" fill="none" stroke="#2a9d8f" stroke-width="12" stroke-linecap="round"/>
+ <!-- obraz -->
+ <ellipse cx="300" cy="212" rx="70" ry="64" fill="#fff8ef"/>
+ <circle cx="304" cy="210" r="26" fill="#2d2a32"/><circle cx="313" cy="201" r="9" fill="#fff"/>
+ <circle cx="262" cy="262" r="20" fill="#ff8a5b" opacity=".85"/>
+ <!-- kljun -->
+ <path d="M352 178 C420 160 474 214 452 286 C444 314 424 334 404 340 C416 300 400 270 356 262 Z" fill="#ffd166"/>
+ <path d="M352 178 C420 160 474 214 452 286 C440 240 404 216 356 222 Z" fill="#ffc233"/>
+ <path d="M350 270 C382 272 402 292 398 326 C376 334 352 318 344 292 Z" fill="#3a3340"/>
+</g></g></svg>
